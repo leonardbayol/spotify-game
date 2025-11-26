@@ -13,6 +13,7 @@ export interface RoomPlayer {
   order: string[]
   score: number
   validated: boolean
+  joinedAt: number // Add join timestamp for host transfer
 }
 
 export interface Room {
@@ -21,8 +22,8 @@ export interface Room {
   playlistId: string
   playlistName: string
   playlistImage: string
-  allTracks: Track[] // Store all tracks from playlist for restarting with new tracks
-  tracks: Track[] // Current round's 10 tracks
+  allTracks: Track[]
+  tracks: Track[]
   players: RoomPlayer[]
   status: "waiting" | "playing" | "results"
   startedAt: number | null
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
       playlistId,
       playlistName,
       playlistImage,
-      allTracks: tracks, // Store all tracks for restart
+      allTracks: tracks,
       tracks: roundTracks,
       players: [
         {
@@ -71,6 +72,7 @@ export async function POST(request: Request) {
           order: initialOrder,
           score: 0,
           validated: false,
+          joinedAt: Date.now(), // Track join time
         },
       ],
       status: "waiting",
@@ -79,7 +81,6 @@ export async function POST(request: Request) {
       correctOrder,
     }
 
-    // Store room with 1 hour expiration
     await redis.set(`room:${roomCode}`, JSON.stringify(room), { ex: 3600 })
 
     return NextResponse.json({ roomCode, hostId, room })

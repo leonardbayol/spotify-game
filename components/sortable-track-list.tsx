@@ -24,7 +24,7 @@ export function SortableTrackList({
   disabled,
 }: SortableTrackListProps) {
   const [draggedId, setDraggedId] = useState<string | null>(null)
-  const [insertIndex, setInsertIndex] = useState<number | null>(null)
+  const [dropZoneIndex, setDropZoneIndex] = useState<number | null>(null)
   const draggedIndexRef = useRef<number | null>(null)
 
   const handleDragStart = useCallback(
@@ -33,7 +33,6 @@ export function SortableTrackList({
       setDraggedId(trackId)
       draggedIndexRef.current = index
       e.dataTransfer.effectAllowed = "move"
-      // Make drag image semi-transparent
       if (e.currentTarget instanceof HTMLElement) {
         e.dataTransfer.setDragImage(e.currentTarget, 0, 0)
       }
@@ -41,81 +40,110 @@ export function SortableTrackList({
     [disabled],
   )
 
-  const handleDragOver = useCallback(
+  const handleDropZoneDragOver = useCallback(
     (e: React.DragEvent, index: number) => {
       e.preventDefault()
       if (disabled || draggedIndexRef.current === null) return
 
-      const rect = e.currentTarget.getBoundingClientRect()
-      const midY = rect.top + rect.height / 2
-      const insertAt = e.clientY < midY ? index : index + 1
-
-      // Don't show insertion at the same position as dragged item
-      if (insertAt !== draggedIndexRef.current && insertAt !== draggedIndexRef.current + 1) {
-        setInsertIndex(insertAt)
+      // Don't show drop zone at current position or adjacent
+      if (index !== draggedIndexRef.current && index !== draggedIndexRef.current + 1) {
+        setDropZoneIndex(index)
       } else {
-        setInsertIndex(null)
+        setDropZoneIndex(null)
       }
     },
     [disabled],
   )
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault()
-      if (disabled || !draggedId || insertIndex === null || draggedIndexRef.current === null) return
+  const handleTrackDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+  }, [])
 
-      const newOrder = [...order]
+  const handleDrop = useCallback(
+    (e: React.DragEvent, targetIndex: number) => {
+      e.preventDefault()
+      if (disabled || !draggedId || draggedIndexRef.current === null) return
+
       const draggedIndex = draggedIndexRef.current
 
+      // Don't move if dropping at same position
+      if (targetIndex === draggedIndex || targetIndex === draggedIndex + 1) {
+        setDraggedId(null)
+        setDropZoneIndex(null)
+        draggedIndexRef.current = null
+        return
+      }
+
+      const newOrder = [...order]
       // Remove from old position
       newOrder.splice(draggedIndex, 1)
-
       // Calculate new insert position (accounting for removal)
-      const newInsertIndex = insertIndex > draggedIndex ? insertIndex - 1 : insertIndex
-
+      const newInsertIndex = targetIndex > draggedIndex ? targetIndex - 1 : targetIndex
       // Insert at new position
       newOrder.splice(newInsertIndex, 0, draggedId)
 
       onOrderChange(newOrder)
       setDraggedId(null)
-      setInsertIndex(null)
+      setDropZoneIndex(null)
       draggedIndexRef.current = null
     },
-    [disabled, draggedId, insertIndex, order, onOrderChange],
+    [disabled, draggedId, order, onOrderChange],
   )
 
   const handleDragEnd = useCallback(() => {
     setDraggedId(null)
-    setInsertIndex(null)
+    setDropZoneIndex(null)
     draggedIndexRef.current = null
   }, [])
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    // Only reset if leaving the container entirely
+  const handleContainerDragLeave = useCallback((e: React.DragEvent) => {
     const relatedTarget = e.relatedTarget as HTMLElement | null
     if (!relatedTarget || !e.currentTarget.contains(relatedTarget)) {
-      setInsertIndex(null)
+      setDropZoneIndex(null)
     }
   }, [])
 
   const orderedTracks = order.map((id) => tracks.find((t) => t.id === id)).filter(Boolean) as Track[]
 
+  const DropZone = ({ index, isActive }: { index: number; isActive: boolean }) => (
+    <div
+      onDragOver={(e) => handleDropZoneDragOver(e, index)}
+      onDrop={(e) => handleDrop(e, index)}
+      className={cn("relative h-3 -my-1.5 z-10 transition-all duration-150", draggedId && "h-4 -my-2")}
+    >
+      <div
+        className={cn(
+          "absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 rounded-full transition-all duration-150",
+          isActive
+            ? "bg-primary h-2 shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+            : draggedId
+              ? "bg-border/50 hover:bg-primary/50"
+              : "bg-transparent",
+        )}
+      />
+      {isActive && (
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary shadow-lg" />
+      )}
+      {isActive && (
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary shadow-lg" />
+      )}
+    </div>
+  )
+
   return (
-    <div className="space-y-2" onDrop={handleDrop} onDragLeave={handleDragLeave}>
+    <div className="space-y-0" onDragLeave={handleContainerDragLeave}>
       {orderedTracks.map((track, index) => {
         const isCorrectPosition = revealed && correctOrder && correctOrder.indexOf(track.id) === index
         const correctPosition = correctOrder ? correctOrder.indexOf(track.id) + 1 : null
-        const showInsertBefore = insertIndex === index
 
         return (
           <div key={track.id}>
-            {showInsertBefore && <div className="h-1 bg-primary rounded-full mb-2 mx-4 animate-pulse" />}
+            {!disabled && !revealed && <DropZone index={index} isActive={dropZoneIndex === index} />}
 
             <div
               draggable={!disabled && !revealed}
               onDragStart={(e) => handleDragStart(e, track.id, index)}
-              onDragOver={(e) => handleDragOver(e, index)}
+              onDragOver={handleTrackDragOver}
               onDragEnd={handleDragEnd}
               className={cn(
                 "flex items-center gap-3 p-3 rounded-xl bg-card border border-border transition-all",
@@ -125,23 +153,16 @@ export function SortableTrackList({
                 revealed && !isCorrectPosition && "bg-destructive/10 border-destructive/40",
               )}
             >
-              {!disabled && !revealed && <GripVertical className="h-5 w-5 text-muted-foreground shrink-0" />}
+              {!disabled && !revealed && <GripVertical className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
 
-              <span
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0",
-                  revealed && isCorrectPosition && "bg-primary text-primary-foreground",
-                  revealed && !isCorrectPosition && "bg-destructive text-destructive-foreground",
-                  !revealed && "bg-secondary text-muted-foreground",
-                )}
-              >
+              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-sm font-bold flex-shrink-0">
                 {index + 1}
-              </span>
+              </div>
 
               <img
                 src={track.cover || "/placeholder.svg"}
-                alt={track.name}
-                className="w-12 h-12 rounded-lg object-cover shrink-0"
+                alt=""
+                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
               />
 
               <div className="flex-1 min-w-0">
@@ -150,13 +171,13 @@ export function SortableTrackList({
               </div>
 
               {revealed && (
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-sm font-medium text-primary">{track.popularity}</span>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-sm font-medium text-muted-foreground">{track.popularity}</span>
                   {isCorrectPosition ? (
-                    <Check className="h-5 w-5 text-primary" />
+                    <Check className="w-5 h-5 text-primary" />
                   ) : (
                     <div className="flex items-center gap-1 text-destructive">
-                      <X className="h-5 w-5" />
+                      <X className="w-5 h-5" />
                       <span className="text-xs">#{correctPosition}</span>
                     </div>
                   )}
@@ -164,9 +185,8 @@ export function SortableTrackList({
               )}
             </div>
 
-            {/* Show insertion line after last item if needed */}
-            {index === orderedTracks.length - 1 && insertIndex === orderedTracks.length && (
-              <div className="h-1 bg-primary rounded-full mt-2 mx-4 animate-pulse" />
+            {index === orderedTracks.length - 1 && !disabled && !revealed && (
+              <DropZone index={orderedTracks.length} isActive={dropZoneIndex === orderedTracks.length} />
             )}
           </div>
         )

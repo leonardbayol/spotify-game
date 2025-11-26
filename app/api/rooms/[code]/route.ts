@@ -7,6 +7,21 @@ const redis = new Redis({
   token: process.env.KV_REST_API_TOKEN!,
 })
 
+function transferHost(room: Room, leavingPlayerId: string): Room {
+  if (room.hostId !== leavingPlayerId) return room
+
+  // Find the player who joined earliest (excluding the leaving player)
+  const remainingPlayers = room.players
+    .filter((p) => p.id !== leavingPlayerId)
+    .sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0))
+
+  if (remainingPlayers.length > 0) {
+    room.hostId = remainingPlayers[0].id
+  }
+
+  return room
+}
+
 // GET - Get room data
 export async function GET(request: Request, { params }: { params: Promise<{ code: string }> }) {
   try {
@@ -26,7 +41,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ code
   }
 }
 
-// PUT - Update room (join, start, update order, validate)
+// PUT - Update room (join, start, update order, validate, leave)
 export async function PUT(request: Request, { params }: { params: Promise<{ code: string }> }) {
   try {
     const { code } = await params
@@ -37,7 +52,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ code
       return NextResponse.json({ error: "Room not found" }, { status: 404 })
     }
 
-    const room: Room = typeof roomData === "string" ? JSON.parse(roomData) : roomData
+    let room: Room = typeof roomData === "string" ? JSON.parse(roomData) : roomData
 
     switch (action) {
       case "join": {
@@ -59,10 +74,41 @@ export async function PUT(request: Request, { params }: { params: Promise<{ code
           order: initialOrder,
           score: 0,
           validated: false,
+          joinedAt: Date.now(), // Track join time
         })
 
         await redis.set(`room:${code}`, JSON.stringify(room), { ex: 3600 })
         return NextResponse.json({ playerId: newPlayerId, room })
+      }
+
+      case "leave": {
+        const leavingPlayer = room.players.find((p) => p.id === playerId)
+        if (!leavingPlayer) {
+          return NextResponse.json({ error: "Player not found" }, { status: 404 })
+        }
+
+        // Transfer host if needed before removing player
+        room = transferHost(room, playerId)
+
+        // Remove player from room
+        room.players = room.players.filter((p) => p.id !== playerId)
+
+        // If no players left, delete the room
+        if (room.players.length === 0) {
+          await redis.del(`room:${code}`)
+          return NextResponse.json({ message: "Room deleted" })
+        }
+
+        // If game was in progress and all remaining players have validated, show results
+        if (room.status === "playing") {
+          const allValidated = room.players.every((p) => p.validated)
+          if (allValidated) {
+            room.status = "results"
+          }
+        }
+
+        await redis.set(`room:${code}`, JSON.stringify(room), { ex: 3600 })
+        return NextResponse.json({ room, newHostId: room.hostId })
       }
 
       case "start": {
@@ -73,7 +119,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ code
         const now = Date.now()
         room.status = "playing"
         room.startedAt = now
-        room.endsAt = now + 60000 // 60 seconds
+        room.endsAt = now + 60000
 
         await redis.set(`room:${code}`, JSON.stringify(room), { ex: 3600 })
         return NextResponse.json({ room })
@@ -108,7 +154,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ code
           return NextResponse.json({ error: "Player not found" }, { status: 404 })
         }
 
-        // Calculate score
         let correctCount = 0
         playerToValidate.order.forEach((id, index) => {
           if (room.correctOrder[index] === id) {
@@ -119,7 +164,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ code
         playerToValidate.score = correctCount
         playerToValidate.validated = true
 
-        // Check if all players validated
         const allValidated = room.players.every((p) => p.validated)
         if (allValidated) {
           room.status = "results"
@@ -130,7 +174,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ code
       }
 
       case "force_end": {
-        // Force end and calculate scores for non-validated players
         room.players.forEach((player) => {
           if (!player.validated) {
             let correctCount = 0

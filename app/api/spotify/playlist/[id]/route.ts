@@ -1,17 +1,18 @@
 import { NextResponse } from "next/server"
 import type { Track, PlaylistInfo } from "@/lib/spotify-types"
+import { getCachedTrackPopularities, cacheTrackPopularities } from "@/lib/track-cache"
 
-// Normalise un nom pour comparer (comme dans ton code Python)
+// Normalise un nom pour comparer
 function normalizeName(s: string): string {
   if (!s) return ""
   return s
     .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "") // Enlever les accents
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, "") // Garder uniquement alphanum
+    .replace(/[^a-z0-9]/g, "")
 }
 
-// Cherche la meilleure popularité pour un titre (comme get_best_track_popularity)
+// Cherche la meilleure popularité pour un titre
 async function getBestTrackPopularity(
   token: string,
   trackName: string,
@@ -39,10 +40,8 @@ async function getBestTrackPopularity(
   }
 
   try {
-    // 1) Requête précise
     let items = await searchOnce(`track:"${trackName}" artist:"${artistName}"`)
 
-    // 2) Fallback plus souple
     if (items.length === 0) {
       items = await searchOnce(`${trackName} ${artistName}`)
     }
@@ -61,7 +60,6 @@ async function getBestTrackPopularity(
 
       if (!tNorm || !aNorm) continue
 
-      // Match souple comme dans ton Python
       const sameTrack = tNorm === baseTrackNorm || tNorm.startsWith(baseTrackNorm) || baseTrackNorm.startsWith(tNorm)
       const sameArtist = aNorm === baseArtistNorm
 
@@ -83,7 +81,6 @@ async function getBestTrackPopularity(
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: playlistId } = await params
 
-  // Récupérer le token
   const tokenRes = await fetch(new URL("/api/spotify/token", request.url).toString())
   if (!tokenRes.ok) {
     return NextResponse.json({ error: "Failed to get Spotify token" }, { status: 500 })
@@ -117,7 +114,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       totalTracks: playlistData.tracks?.total || 0,
     }
 
-    // Récupérer les tracks (jusqu'à 100)
+    // Récupérer les tracks
     const tracksRes = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100&market=FR`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -129,8 +126,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const tracksData = await tracksRes.json()
     const items = tracksData.items || []
 
-    // Construire les tracks avec recherche de meilleure popularité
+    const trackIds = items
+      .filter((item: { track: { id: string } | null }) => item.track?.id)
+      .map((item: { track: { id: string } }) => item.track.id)
+
+    const cachedPopularities = await getCachedTrackPopularities(trackIds)
+
+    // Build tracks with cache-first approach
     const tracks: Track[] = []
+    const tracksToCache: Array<{ id: string; name: string; artist: string; popularity: number }> = []
 
     for (const item of items) {
       const track = item.track
@@ -143,13 +147,28 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       const cover = images[0]?.url || ""
       const rawPop = track.popularity || 0
 
-      // Chercher la meilleure popularité (comme dans ton Python)
-      let bestPop = rawPop
-      if (mainArtist !== "Inconnu") {
-        const altPop = await getBestTrackPopularity(token, track.name, mainArtist)
-        if (altPop !== null) {
-          bestPop = Math.max(bestPop, altPop)
+      const cachedPop = cachedPopularities.get(track.id)
+      let bestPop: number
+
+      if (cachedPop !== undefined) {
+        // Use cached popularity (less than 7 days old)
+        bestPop = cachedPop
+      } else {
+        // Not in cache or cache expired - fetch from Spotify
+        bestPop = rawPop
+        if (mainArtist !== "Inconnu") {
+          const altPop = await getBestTrackPopularity(token, track.name, mainArtist)
+          if (altPop !== null) {
+            bestPop = Math.max(bestPop, altPop)
+          }
         }
+        // Add to list of tracks to cache
+        tracksToCache.push({
+          id: track.id,
+          name: track.name,
+          artist: mainArtist,
+          popularity: bestPop,
+        })
       }
 
       tracks.push({
@@ -162,6 +181,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         popularity: bestPop,
         previewUrl: track.preview_url || undefined,
       })
+    }
+
+    if (tracksToCache.length > 0) {
+      await cacheTrackPopularities(tracksToCache)
     }
 
     return NextResponse.json({ playlist, tracks })
