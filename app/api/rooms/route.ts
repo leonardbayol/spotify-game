@@ -13,7 +13,7 @@ export interface RoomPlayer {
   order: string[]
   score: number
   validated: boolean
-  joinedAt: number // Add join timestamp for host transfer
+  joinedAt: number
 }
 
 export interface Room {
@@ -40,41 +40,25 @@ function generateRoomCode(): string {
   return code
 }
 
-// Helper pour mélanger un tableau
-function shuffleArray<T>(array: T[]): T[] {
-  return [...array].sort(() => Math.random() - 0.5)
-}
-
-// Sélectionne 10 tracks avec popularité unique
+// Fonction pour choisir 10 tracks avec popularité unique
 function select10UniquePopularity(tracks: Track[]): Track[] {
   const byPopularity: Record<number, Track[]> = {}
-
-  tracks.forEach((t) => {
+  tracks.forEach(t => {
     if (!byPopularity[t.popularity]) byPopularity[t.popularity] = []
     byPopularity[t.popularity].push(t)
   })
 
   const uniquePopularities = Object.keys(byPopularity).map(Number)
-  const shuffledPopularities = shuffleArray(uniquePopularities)
-  const selected: Track[] = []
+  if (uniquePopularities.length < 10) {
+    throw new Error("Pas assez de popularités uniques pour créer le round")
+  }
 
-  for (const pop of shuffledPopularities) {
-    if (selected.length >= 10) break
+  const shuffledPopularities = uniquePopularities.sort(() => Math.random() - 0.5).slice(0, 10)
+
+  return shuffledPopularities.map(pop => {
     const pool = byPopularity[pop]
-    const chosen = pool[Math.floor(Math.random() * pool.length)]
-    selected.push(chosen)
-  }
-
-  // Si moins de 10 tracks, compléter avec les restantes
-  if (selected.length < 10) {
-    const remaining = tracks.filter((t) => !selected.includes(t))
-    const shuffledRemaining = shuffleArray(remaining)
-    while (selected.length < 10 && shuffledRemaining.length > 0) {
-      selected.push(shuffledRemaining.pop()!)
-    }
-  }
-
-  return selected
+    return pool[Math.floor(Math.random() * pool.length)]
+  })
 }
 
 // POST - Create a new room
@@ -83,19 +67,16 @@ export async function POST(request: Request) {
     const { hostName, playlistId, playlistName, playlistImage, tracks } = await request.json()
 
     if (!hostName || !playlistId || !tracks || tracks.length < 10) {
-      return NextResponse.json(
-        { error: "Missing required fields or not enough tracks" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "Missing required fields or not enough tracks" }, { status: 400 })
     }
 
     const roomCode = generateRoomCode()
     const hostId = crypto.randomUUID()
 
+    // Sélectionner 10 tracks avec popularité unique
     const roundTracks = select10UniquePopularity(tracks)
-    const correctOrder = [...roundTracks]
-      .sort((a, b) => b.popularity - a.popularity)
-      .map((t) => t.id)
+
+    const correctOrder = [...roundTracks].sort((a, b) => b.popularity - a.popularity).map((t) => t.id)
     const initialOrder = roundTracks.map((t) => t.id)
 
     const room: Room = {
