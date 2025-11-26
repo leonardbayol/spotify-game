@@ -109,75 +109,76 @@ export function SortableTrackList({
     <div
       onDragOver={(e) => handleDropZoneDragOver(e, index)}
       onDrop={(e) => handleDrop(e, index)}
-      className={cn("relative h-3 -my-1.5 z-10 transition-all duration-150", draggedId && "h-4 -my-2")}
+      className={cn(
+        "relative transition-all duration-200 rounded-lg",
+        // Zone toujours présente et cliquable
+        draggedId ? "h-8 my-1" : "h-2 my-0.5",
+      )}
     >
+      {/* Background de la zone de drop */}
       <div
         className={cn(
-          "absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 rounded-full transition-all duration-150",
+          "absolute inset-0 rounded-lg border-2 border-dashed transition-all duration-200",
           isActive
-            ? "bg-primary h-2 shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+            ? "bg-primary/20 border-primary"
             : draggedId
-              ? "bg-border/50 hover:bg-primary/50"
-              : "bg-transparent",
+              ? "bg-muted/30 border-muted-foreground/30 hover:bg-primary/10 hover:border-primary/50"
+              : "border-transparent",
         )}
       />
-      {isActive && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary shadow-lg" />
-      )}
-      {isActive && (
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-primary shadow-lg" />
-      )}
+      {/* Ligne centrale */}
+      {isActive && <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-0.5 bg-primary rounded-full" />}
     </div>
   )
 
   return (
     <div className="space-y-0" onDragLeave={handleContainerDragLeave}>
+      {!disabled && !revealed && <DropZone index={0} isActive={dropZoneIndex === 0} />}
+
       {orderedTracks.map((track, index) => {
         const isCorrectPosition = revealed && correctOrder && correctOrder.indexOf(track.id) === index
         const correctPosition = correctOrder ? correctOrder.indexOf(track.id) + 1 : null
 
         return (
           <div key={track.id}>
-            {!disabled && !revealed && <DropZone index={index} isActive={dropZoneIndex === index} />}
-
             <div
               draggable={!disabled && !revealed}
               onDragStart={(e) => handleDragStart(e, track.id, index)}
               onDragOver={handleTrackDragOver}
               onDragEnd={handleDragEnd}
               className={cn(
-                "flex items-center gap-3 p-3 rounded-xl bg-card border border-border transition-all",
+                "flex items-center gap-2 p-2 rounded-lg bg-card border border-border transition-all",
                 !disabled && !revealed && "cursor-grab active:cursor-grabbing hover:bg-secondary/50",
                 draggedId === track.id && "opacity-40 scale-[0.98]",
                 revealed && isCorrectPosition && "bg-primary/10 border-primary/40",
                 revealed && !isCorrectPosition && "bg-destructive/10 border-destructive/40",
               )}
             >
-              {!disabled && !revealed && <GripVertical className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
+              {!disabled && !revealed && <GripVertical className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
 
-              <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-sm font-bold flex-shrink-0">
+              <div className="w-6 h-6 rounded-md bg-secondary flex items-center justify-center text-xs font-bold flex-shrink-0">
                 {index + 1}
               </div>
 
               <img
                 src={track.cover || "/placeholder.svg"}
                 alt=""
-                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                className="w-10 h-10 rounded-md object-cover flex-shrink-0"
               />
 
               <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{track.name}</p>
-                <p className="text-sm text-muted-foreground truncate">{track.artist}</p>
+                <p className="text-sm font-medium truncate">{track.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
               </div>
 
               {revealed && (
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-sm font-medium text-muted-foreground">{track.popularity}</span>
+                  <span className="text-xs font-medium text-muted-foreground">{track.popularity}</span>
                   {isCorrectPosition ? (
-                    <Check className="w-5 h-5 text-primary" />
+                    <Check className="w-4 h-4 text-primary" />
                   ) : (
                     <div className="flex items-center gap-1 text-destructive">
-                      <X className="w-5 h-5" />
+                      <X className="w-4 h-4" />
                       <span className="text-xs">#{correctPosition}</span>
                     </div>
                   )}
@@ -185,9 +186,7 @@ export function SortableTrackList({
               )}
             </div>
 
-            {index === orderedTracks.length - 1 && !disabled && !revealed && (
-              <DropZone index={orderedTracks.length} isActive={dropZoneIndex === orderedTracks.length} />
-            )}
+            {!disabled && !revealed && <DropZone index={index + 1} isActive={dropZoneIndex === index + 1} />}
           </div>
         )
       })}
