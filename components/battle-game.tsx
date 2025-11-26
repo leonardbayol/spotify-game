@@ -7,6 +7,7 @@ import { useGame } from "@/lib/game-context"
 import { PlaylistModal } from "@/components/playlist-modal"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { SortableTrackList } from "@/components/sortable-track-list"
 import {
   Loader2,
   Trophy,
@@ -606,8 +607,14 @@ export function BattleGame() {
                   </div>
 
                   {/* Sortable list */}
-                  <SortableList tracks={room.tracks} order={localOrder} onOrderChange={updateOrder} />
-
+                  <SortableTrackList
+                    tracks={room.tracks}
+                    order={localOrder}
+                    onOrderChange={updateOrder}
+                    revealed={false}          // pas de couleurs correct/incorrect pendant la partie
+                    correctOrder={[]}         // ignoré tant que revealed=false
+                    disabled={false}
+                  />
                   <div className="pt-4">
                     <Button onClick={validateRanking} disabled={isSubmitting} className="w-full">
                       {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Valider mon classement"}
