@@ -44,10 +44,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className="font-sans antialiased min-h-screen bg-background">
-        {children}
+      <body className="font-sans antialiased min-h-screen bg-background flex justify-center">
+        {/* Wrapper centré horizontalement et responsive */}
+        <div className="w-full max-w-5xl px-4">
+          {children}
+        </div>
         <Analytics />
       </body>
     </html>
   )
 }
+

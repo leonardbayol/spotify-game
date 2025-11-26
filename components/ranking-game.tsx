@@ -56,7 +56,6 @@ export function RankingGame() {
             </h1>
             {!ranking.validated && (
               <p className="text-muted-foreground max-w-md mx-auto flex items-center justify-center gap-2">
-                <GripVertical className="h-4 w-4 shrink-0" />
                 Glisse les titres pour les classer du plus au moins populaire.
               </p>
             )}
