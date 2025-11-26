@@ -42,24 +42,25 @@ function generateRoomCode(): string {
 
 // Fonction pour choisir 10 tracks avec popularité unique
 function select10UniquePopularity(tracks: Track[]): Track[] {
-  const byPopularity: Record<number, Track[]> = {}
-  tracks.forEach(t => {
-    if (!byPopularity[t.popularity]) byPopularity[t.popularity] = []
-    byPopularity[t.popularity].push(t)
-  })
+  const usedPopularities = new Set<number>()
+  const shuffledTracks = [...tracks].sort(() => Math.random() - 0.5)
+  const result: Track[] = []
 
-  const uniquePopularities = Object.keys(byPopularity).map(Number)
-  if (uniquePopularities.length < 10) {
-    throw new Error("Pas assez de popularités uniques pour créer le round")
+  for (const track of shuffledTracks) {
+    if (!usedPopularities.has(track.popularity)) {
+      result.push(track)
+      usedPopularities.add(track.popularity)
+    }
+    if (result.length === 10) break
   }
 
-  const shuffledPopularities = uniquePopularities.sort(() => Math.random() - 0.5).slice(0, 10)
+  if (result.length < 10) {
+    throw new Error("Impossible de sélectionner 10 tracks avec popularités uniques")
+  }
 
-  return shuffledPopularities.map(pop => {
-    const pool = byPopularity[pop]
-    return pool[Math.floor(Math.random() * pool.length)]
-  })
+  return result
 }
+
 
 // POST - Create a new room
 export async function POST(request: Request) {
