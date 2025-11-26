@@ -40,21 +40,62 @@ function generateRoomCode(): string {
   return code
 }
 
+// Helper pour mélanger un tableau
+function shuffleArray<T>(array: T[]): T[] {
+  return [...array].sort(() => Math.random() - 0.5)
+}
+
+// Sélectionne 10 tracks avec popularité unique
+function select10UniquePopularity(tracks: Track[]): Track[] {
+  const byPopularity: Record<number, Track[]> = {}
+
+  tracks.forEach((t) => {
+    if (!byPopularity[t.popularity]) byPopularity[t.popularity] = []
+    byPopularity[t.popularity].push(t)
+  })
+
+  const uniquePopularities = Object.keys(byPopularity).map(Number)
+  const shuffledPopularities = shuffleArray(uniquePopularities)
+  const selected: Track[] = []
+
+  for (const pop of shuffledPopularities) {
+    if (selected.length >= 10) break
+    const pool = byPopularity[pop]
+    const chosen = pool[Math.floor(Math.random() * pool.length)]
+    selected.push(chosen)
+  }
+
+  // Si moins de 10 tracks, compléter avec les restantes
+  if (selected.length < 10) {
+    const remaining = tracks.filter((t) => !selected.includes(t))
+    const shuffledRemaining = shuffleArray(remaining)
+    while (selected.length < 10 && shuffledRemaining.length > 0) {
+      selected.push(shuffledRemaining.pop()!)
+    }
+  }
+
+  return selected
+}
+
 // POST - Create a new room
 export async function POST(request: Request) {
   try {
     const { hostName, playlistId, playlistName, playlistImage, tracks } = await request.json()
 
     if (!hostName || !playlistId || !tracks || tracks.length < 10) {
-      return NextResponse.json({ error: "Missing required fields or not enough tracks" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Missing required fields or not enough tracks" },
+        { status: 400 }
+      )
     }
 
     const roomCode = generateRoomCode()
     const hostId = crypto.randomUUID()
 
-    const shuffledAll = [...tracks].sort(() => Math.random() - 0.5)
-    const roundTracks = shuffledAll.slice(0, 10)
-    const correctOrder = [...roundTracks].sort((a, b) => b.popularity - a.popularity).map((t) => t.id)
+    const roundTracks = select10UniquePopularity(tracks)
+    const correctOrder = [...roundTracks]
+      .sort((a, b) => b.popularity - a.popularity)
+      .map((t) => t.id)
     const initialOrder = roundTracks.map((t) => t.id)
 
     const room: Room = {
@@ -72,7 +113,7 @@ export async function POST(request: Request) {
           order: initialOrder,
           score: 0,
           validated: false,
-          joinedAt: Date.now(), // Track join time
+          joinedAt: Date.now(),
         },
       ],
       status: "waiting",
