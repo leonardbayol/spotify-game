@@ -42,7 +42,7 @@ export function PlaylistModal({ open, onOpenChange }: PlaylistModalProps) {
   const handleDefault = async () => {
     setLocalError("")
     // Top 50 France
-    await loadPlaylist("37i9dQZF1DXcBWIGoYBM5M")
+    await loadPlaylist("2IgPkhcHbgQ4s4PdCxljAx")
   }
 
   const isCredentialsError =
@@ -123,7 +123,7 @@ export function PlaylistModal({ open, onOpenChange }: PlaylistModalProps) {
               className="w-full border-primary/50 text-primary hover:bg-primary/10 bg-transparent"
             >
               <Sparkles className="mr-2 h-4 w-4" />
-              Top 50 Monde (démo)
+              Top France 2025
             </Button>
           </div>
         </form>
