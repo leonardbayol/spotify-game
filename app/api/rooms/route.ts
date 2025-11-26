@@ -21,7 +21,8 @@ export interface Room {
   playlistId: string
   playlistName: string
   playlistImage: string
-  tracks: Track[]
+  allTracks: Track[] // Store all tracks from playlist for restarting with new tracks
+  tracks: Track[] // Current round's 10 tracks
   players: RoomPlayer[]
   status: "waiting" | "playing" | "results"
   startedAt: number | null
@@ -50,10 +51,10 @@ export async function POST(request: Request) {
     const roomCode = generateRoomCode()
     const hostId = crypto.randomUUID()
 
-    // Select 10 random tracks and shuffle them
-    const shuffledTracks = [...tracks].sort(() => Math.random() - 0.5).slice(0, 10)
-    const correctOrder = [...shuffledTracks].sort((a, b) => b.popularity - a.popularity).map((t) => t.id)
-    const initialOrder = shuffledTracks.map((t) => t.id)
+    const shuffledAll = [...tracks].sort(() => Math.random() - 0.5)
+    const roundTracks = shuffledAll.slice(0, 10)
+    const correctOrder = [...roundTracks].sort((a, b) => b.popularity - a.popularity).map((t) => t.id)
+    const initialOrder = roundTracks.map((t) => t.id)
 
     const room: Room = {
       id: roomCode,
@@ -61,7 +62,8 @@ export async function POST(request: Request) {
       playlistId,
       playlistName,
       playlistImage,
-      tracks: shuffledTracks,
+      allTracks: tracks, // Store all tracks for restart
+      tracks: roundTracks,
       players: [
         {
           id: hostId,

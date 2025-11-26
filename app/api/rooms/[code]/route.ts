@@ -154,12 +154,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ code
           return NextResponse.json({ error: "Only host can restart" }, { status: 403 })
         }
 
-        // Reshuffle tracks and reset players
-        const shuffledTracks = [...room.tracks].sort(() => Math.random() - 0.5)
-        const newCorrectOrder = [...shuffledTracks].sort((a, b) => b.popularity - a.popularity).map((t) => t.id)
-        const newInitialOrder = shuffledTracks.map((t) => t.id)
+        const shuffledAll = [...room.allTracks].sort(() => Math.random() - 0.5)
+        const newRoundTracks = shuffledAll.slice(0, 10)
+        const newCorrectOrder = [...newRoundTracks].sort((a, b) => b.popularity - a.popularity).map((t) => t.id)
+        const newInitialOrder = newRoundTracks.map((t) => t.id)
 
-        room.tracks = shuffledTracks
+        room.tracks = newRoundTracks
         room.correctOrder = newCorrectOrder
         room.status = "waiting"
         room.startedAt = null

@@ -26,6 +26,7 @@ interface Room {
   playlistId: string
   playlistName: string
   playlistImage: string
+  allTracks: Track[]
   tracks: Track[]
   players: RoomPlayer[]
   status: "waiting" | "playing" | "results"
@@ -62,8 +63,12 @@ export function BattleGame() {
         const data = await res.json()
         setRoom(data.room)
 
-        // Update phase based on room status
-        if (data.room.status === "playing") {
+        if (data.room.status === "waiting") {
+          setPhase("lobby")
+          // Reset local order when returning to lobby for new round
+          setLocalOrder([])
+          setTimeLeft(60)
+        } else if (data.room.status === "playing") {
           setPhase("playing")
         } else if (data.room.status === "results") {
           setPhase("results")
@@ -74,9 +79,8 @@ export function BattleGame() {
     }
   }, [])
 
-  // Start polling when in lobby or playing
   useEffect(() => {
-    if ((phase === "lobby" || phase === "playing") && room?.id) {
+    if ((phase === "lobby" || phase === "playing" || phase === "results") && room?.id) {
       pollIntervalRef.current = setInterval(() => pollRoom(room.id), 1500)
       return () => {
         if (pollIntervalRef.current) clearInterval(pollIntervalRef.current)
@@ -117,7 +121,7 @@ export function BattleGame() {
     if (phase === "playing" && room && playerId) {
       const player = room.players.find((p) => p.id === playerId)
       if (player && localOrder.length === 0) {
-        setLocalOrder(player.order)
+        setLocalOrder(room.tracks.map((t) => t.id))
       }
     }
   }, [phase, room, playerId, localOrder.length])

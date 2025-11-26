@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react"
 import type { Track, PlaylistInfo, DuelState, RankingState } from "./spotify-types"
 import { loadPlaylistTracks, getTwoDifferentTracks, getRandomTracks } from "./spotify-utils"
 
@@ -50,6 +50,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
     score: 0,
   })
 
+  useEffect(() => {
+    try {
+      const savedPlaylist = localStorage.getItem("spotify-game-playlist")
+      const savedTracks = localStorage.getItem("spotify-game-tracks")
+
+      if (savedPlaylist && savedTracks) {
+        setPlaylist(JSON.parse(savedPlaylist))
+        setTracks(JSON.parse(savedTracks))
+      }
+    } catch (e) {
+      console.error("Failed to load saved playlist:", e)
+    }
+  }, [])
+
   const loadPlaylist = useCallback(async (playlistId: string) => {
     setIsLoading(true)
     setError(null)
@@ -57,6 +71,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       const { tracks: newTracks, playlist: newPlaylist } = await loadPlaylistTracks(playlistId)
       setTracks(newTracks)
       setPlaylist(newPlaylist)
+
+      localStorage.setItem("spotify-game-playlist", JSON.stringify(newPlaylist))
+      localStorage.setItem("spotify-game-tracks", JSON.stringify(newTracks))
     } catch (e) {
       const message = e instanceof Error ? e.message : "Impossible de charger la playlist"
       setError(message)
