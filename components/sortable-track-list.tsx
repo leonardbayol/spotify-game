@@ -1,10 +1,28 @@
 "use client"
 
-import type React from "react"
-import { useState, useCallback, useRef } from "react"
+import { useState } from "react"
 import type { Track } from "@/lib/spotify-types"
 import { cn } from "@/lib/utils"
 import { GripVertical, Check, X } from "lucide-react"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay,
+  type DragStartEvent,
+  type DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 interface SortableTrackListProps {
   tracks: Track[]
@@ -15,6 +33,94 @@ interface SortableTrackListProps {
   disabled?: boolean
 }
 
+interface SortableTrackItemProps {
+  track: Track
+  index: number
+  revealed?: boolean
+  isCorrectPosition?: boolean
+  correctPosition?: number | null
+  disabled?: boolean
+}
+
+function SortableTrackItem({
+  track,
+  index,
+  revealed,
+  isCorrectPosition,
+  correctPosition,
+  disabled,
+}: SortableTrackItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: track.id,
+    disabled: disabled || revealed,
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex items-center gap-2 py-1.5 px-2 rounded-lg bg-card border transition-colors",
+        !disabled && !revealed && "cursor-grab active:cursor-grabbing hover:bg-secondary/50",
+        isDragging && "opacity-50 z-50",
+        "border-border",
+        revealed && isCorrectPosition && "bg-primary/10 border-primary/40",
+        revealed && !isCorrectPosition && "bg-destructive/10 border-destructive/40",
+      )}
+      {...attributes}
+      {...listeners}
+    >
+      {!disabled && !revealed && <GripVertical className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
+
+      <div className="w-5 h-5 rounded bg-secondary flex items-center justify-center text-xs font-bold flex-shrink-0">
+        {index + 1}
+      </div>
+
+      <img src={track.cover || "/placeholder.svg"} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate leading-tight">{track.name}</p>
+        <p className="text-xs text-muted-foreground truncate leading-tight">{track.artist}</p>
+      </div>
+
+      {revealed && (
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-xs font-medium text-muted-foreground">{track.popularity}</span>
+          {isCorrectPosition ? (
+            <Check className="w-4 h-4 text-primary" />
+          ) : (
+            <div className="flex items-center gap-1 text-destructive">
+              <X className="w-4 h-4" />
+              <span className="text-xs">#{correctPosition}</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TrackOverlay({ track, index }: { track: Track; index: number }) {
+  return (
+    <div className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-card border border-primary shadow-lg cursor-grabbing">
+      <GripVertical className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+      <div className="w-5 h-5 rounded bg-secondary flex items-center justify-center text-xs font-bold flex-shrink-0">
+        {index + 1}
+      </div>
+      <img src={track.cover || "/placeholder.svg"} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate leading-tight">{track.name}</p>
+        <p className="text-xs text-muted-foreground truncate leading-tight">{track.artist}</p>
+      </div>
+    </div>
+  )
+}
+
 export function SortableTrackList({
   tracks,
   order,
@@ -23,123 +129,68 @@ export function SortableTrackList({
   correctOrder,
   disabled,
 }: SortableTrackListProps) {
-  const [draggedId, setDraggedId] = useState<string | null>(null)
-  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null)
-  const draggedIndexRef = useRef<number | null>(null)
+  const [activeId, setActiveId] = useState<string | null>(null)
 
-  const handleDragStart = useCallback(
-    (e: React.DragEvent, trackId: string, index: number) => {
-      if (disabled) return
-      setDraggedId(trackId)
-      draggedIndexRef.current = index
-      e.dataTransfer.effectAllowed = "move"
-    },
-    [disabled],
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   )
-
-  const handleDragOver = useCallback(
-    (e: React.DragEvent, index: number) => {
-      e.preventDefault()
-      if (disabled || draggedIndexRef.current === null) return
-      setDropTargetIndex(index)
-    },
-    [disabled],
-  )
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent, targetIndex: number) => {
-      e.preventDefault()
-      if (disabled || !draggedId || draggedIndexRef.current === null) return
-
-      const draggedIndex = draggedIndexRef.current
-
-      if (targetIndex === draggedIndex) {
-        setDraggedId(null)
-        setDropTargetIndex(null)
-        draggedIndexRef.current = null
-        return
-      }
-
-      const newOrder = [...order]
-      newOrder.splice(draggedIndex, 1)
-      const insertIndex = targetIndex > draggedIndex ? targetIndex - 1 : targetIndex
-      newOrder.splice(insertIndex, 0, draggedId)
-
-      onOrderChange(newOrder)
-      setDraggedId(null)
-      setDropTargetIndex(null)
-      draggedIndexRef.current = null
-    },
-    [disabled, draggedId, order, onOrderChange],
-  )
-
-  const handleDragEnd = useCallback(() => {
-    setDraggedId(null)
-    setDropTargetIndex(null)
-    draggedIndexRef.current = null
-  }, [])
 
   const orderedTracks = order.map((id) => tracks.find((t) => t.id === id)).filter(Boolean) as Track[]
+  const activeTrack = activeId ? tracks.find((t) => t.id === activeId) : null
+  const activeIndex = activeId ? order.indexOf(activeId) : -1
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(event.active.id as string)
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+
+    if (over && active.id !== over.id) {
+      const oldIndex = order.indexOf(active.id as string)
+      const newIndex = order.indexOf(over.id as string)
+      onOrderChange(arrayMove(order, oldIndex, newIndex))
+    }
+
+    setActiveId(null)
+  }
 
   return (
-    <div className="flex flex-col gap-3">
-      {orderedTracks.map((track, index) => {
-        const isCorrectPosition = revealed && correctOrder && correctOrder.indexOf(track.id) === index
-        const correctPosition = correctOrder ? correctOrder.indexOf(track.id) + 1 : null
-        const isDragged = draggedId === track.id
-        const isDropTarget = dropTargetIndex === index && draggedId && !isDragged
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={order} strategy={verticalListSortingStrategy}>
+        <div className="flex flex-col gap-2">
+          {orderedTracks.map((track, index) => {
+            const isCorrectPosition = revealed && correctOrder && correctOrder.indexOf(track.id) === index
+            const correctPosition = correctOrder ? correctOrder.indexOf(track.id) + 1 : null
 
-        return (
-          <div
-            key={track.id}
-            draggable={!disabled && !revealed}
-            onDragStart={(e) => handleDragStart(e, track.id, index)}
-            onDragOver={(e) => handleDragOver(e, index)}
-            onDrop={(e) => handleDrop(e, index)}
-            onDragEnd={handleDragEnd}
-            className={cn(
-              "flex items-center gap-2 py-1.5 px-2 rounded-lg bg-card border transition-all",
-              !disabled && !revealed && "cursor-grab active:cursor-grabbing hover:bg-secondary/50",
-              isDragged && "opacity-30",
-              isDropTarget && "border-t-2 border-t-primary",
-              !isDropTarget && "border-border",
-              revealed && isCorrectPosition && "bg-primary/10 border-primary/40",
-              revealed && !isCorrectPosition && "bg-destructive/10 border-destructive/40",
-            )}
-          >
-            {!disabled && !revealed && <GripVertical className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
+            return (
+              <SortableTrackItem
+                key={track.id}
+                track={track}
+                index={index}
+                revealed={revealed}
+                isCorrectPosition={isCorrectPosition}
+                correctPosition={correctPosition}
+                disabled={disabled}
+              />
+            )
+          })}
+        </div>
+      </SortableContext>
 
-            <div className="w-5 h-5 rounded bg-secondary flex items-center justify-center text-xs font-bold flex-shrink-0">
-              {index + 1}
-            </div>
-
-            <img
-              src={track.cover || "/placeholder.svg"}
-              alt=""
-              className="w-8 h-8 rounded object-cover flex-shrink-0"
-            />
-
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate leading-tight">{track.name}</p>
-              <p className="text-xs text-muted-foreground truncate leading-tight">{track.artist}</p>
-            </div>
-
-            {revealed && (
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="text-xs font-medium text-muted-foreground">{track.popularity}</span>
-                {isCorrectPosition ? (
-                  <Check className="w-4 h-4 text-primary" />
-                ) : (
-                  <div className="flex items-center gap-1 text-destructive">
-                    <X className="w-4 h-4" />
-                    <span className="text-xs">#{correctPosition}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )
-      })}
-    </div>
+      <DragOverlay>{activeTrack ? <TrackOverlay track={activeTrack} index={activeIndex + 1} /> : null}</DragOverlay>
+    </DndContext>
   )
 }
