@@ -29,9 +29,7 @@ export function RankingGame() {
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
-  const correctOrder = [...ranking.tracks]
-    .sort((a, b) => b.popularity - a.popularity)
-    .map((t) => t.id)
+  const correctOrder = [...ranking.tracks].sort((a, b) => b.popularity - a.popularity).map((t) => t.id)
 
   const correctTracks = correctOrder
     .map((id) => ranking.tracks.find((t) => t.id === id))
@@ -49,41 +47,35 @@ export function RankingGame() {
     )
   }
 
-  const renderTrackItem = (track: Track, index: number, isCorrect: boolean, isDesktop: boolean) => {
-    const bgClass = isCorrect
-      ? "bg-primary/10 border-primary/40"
-      : "bg-destructive/10 border-destructive/40"
+  const renderMobileTrack = (track: Track, index: number) => (
+    <div
+      key={track.id}
+      className="flex flex-col items-center gap-1 p-1 rounded-xl border bg-card"
+    >
+      <div className="w-16 h-16">
+        <img src={track.cover || "/placeholder.svg"} alt={track.name} className="w-full h-full object-cover rounded-lg" />
+      </div>
+      <p className="text-xs font-bold truncate max-w-[64px] text-center">{track.name}</p>
+    </div>
+  )
 
+  const renderDesktopTrack = (track: Track, index: number, isCorrect: boolean) => {
+    const bgClass = isCorrect ? "bg-primary/10 border-primary/40" : "bg-destructive/10 border-destructive/40"
     return (
-      <div
-        key={track.id}
-        className={cn(
-          "flex flex-col items-center gap-1 p-2 rounded-xl border transition-colors",
-          bgClass
-        )}
-      >
-        <div className={cn("w-16 h-16 sm:w-10 sm:h-10")}>
-          <img
-            src={track.cover || "/placeholder.svg"}
-            alt={track.name}
-            className="w-full h-full object-cover rounded-lg"
-          />
+      <div key={track.id} className={cn("flex items-center gap-3 p-3 rounded-xl border", bgClass)}>
+        <span className={cn(
+          "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm",
+          isCorrect ? "bg-primary text-primary-foreground" : "bg-destructive text-destructive-foreground"
+        )}>{index + 1}</span>
+        <img src={track.cover || "/placeholder.svg"} className="w-10 h-10 rounded-lg object-cover" />
+        <div className="flex-1 min-w-0">
+          <p className="font-medium truncate text-sm">{track.name}</p>
+          <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
+          {track.featuring.length > 0 && (
+            <p className="text-xs text-muted-foreground truncate">feat. {track.featuring.join(", ")}</p>
+          )}
         </div>
-
-        {isDesktop ? (
-          <div className="flex flex-col items-center">
-            <p className="text-sm font-medium truncate max-w-[150px] text-center">{track.name}</p>
-            <p className="text-xs text-muted-foreground truncate max-w-[150px] text-center">{track.artist}</p>
-            {track.featuring.length > 0 && (
-              <p className="text-xs text-muted-foreground truncate max-w-[150px] text-center">
-                feat. {track.featuring.join(", ")}
-              </p>
-            )}
-            <p className="text-sm font-bold">{track.popularity}</p>
-          </div>
-        ) : (
-          <p className="text-xs font-bold truncate max-w-[64px] text-center">{track.name}</p>
-        )}
+        <span className="text-sm font-bold text-primary">{track.popularity}</span>
       </div>
     )
   }
@@ -92,7 +84,8 @@ export function RankingGame() {
     <>
       <div className="flex flex-col items-center min-h-[calc(100vh-64px)] px-4 py-4">
         <div className="w-full max-w-3xl flex flex-col items-center">
-          {/* Score / Header */}
+
+          {/* HEADER */}
           {ranking.validated ? (
             <div className="flex items-center gap-2 mb-6">
               <Trophy className="h-6 w-6 text-yellow-500" />
@@ -109,37 +102,54 @@ export function RankingGame() {
               <Button onClick={() => setShowPlaylistModal(true)}>Charger une playlist</Button>
             </div>
           ) : ranking.validated ? (
-            // VALIDATED: results
-            <div className="w-full flex flex-col md:flex-row gap-4 justify-center">
-              {/* Correct order */}
-              <div className="flex-1 flex flex-col items-center">
-                <h3 className="text-lg font-bold text-center text-primary mb-2 sm:mb-4">
-                  Classement correct
-                </h3>
-                <div className={cn(isMobile ? "grid grid-cols-5 gap-1" : "space-y-2")}>
-                  {correctTracks.map((track, idx) => renderTrackItem(track, idx, true, !isMobile))}
-                </div>
-              </div>
+            // VALIDATED: show results
+            <>
+              {isMobile ? (
+                // MOBILE: horizontal grids
+                <div className="w-full flex flex-col gap-4 items-center">
+                  <div className="flex gap-2 justify-center flex-wrap">
+                    {correctTracks.map((track, idx) => renderMobileTrack(track, idx))}
+                  </div>
+                  <div className="flex gap-2 justify-center flex-wrap">
+                    {userTracks.map((track, idx) => renderMobileTrack(track, idx))}
+                  </div>
 
-              {/* User order */}
-              <div className="flex-1 flex flex-col items-center">
-                <h3 className="text-lg font-bold text-center mb-2 sm:mb-4">Ton classement</h3>
-                <div className={cn(isMobile ? "grid grid-cols-5 gap-1" : "space-y-2")}>
-                  {userTracks.map((track, idx) => {
-                    const isCorrect = correctOrder[idx] === track.id
-                    return renderTrackItem(track, idx, isCorrect, !isMobile)
-                  })}
+                  <div className="flex justify-center mt-4 w-full">
+                    <Button variant="outline" onClick={startNewRanking} className="gap-2">
+                      <RefreshCw className="h-4 w-4" />
+                      Nouvelle partie
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                // DESKTOP: vertical lists side by side
+                <div className="flex flex-col sm:flex-row gap-4 w-full">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-center text-primary mb-3">Classement correct</h3>
+                    <div className="space-y-2">
+                      {correctTracks.map((track, idx) => renderDesktopTrack(track, idx, true))}
+                    </div>
+                  </div>
 
-              {/* NEW GAME BUTTON */}
-              <div className="flex justify-center mt-6 w-full md:w-auto">
-                <Button variant="outline" onClick={startNewRanking} className="gap-2">
-                  <RefreshCw className="h-4 w-4" />
-                  Nouvelle partie
-                </Button>
-              </div>
-            </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-center mb-3">Ton classement</h3>
+                    <div className="space-y-2">
+                      {userTracks.map((track, idx) => {
+                        const isCorrect = correctOrder[idx] === track.id
+                        return renderDesktopTrack(track, idx, isCorrect)
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center mt-6">
+                    <Button variant="outline" onClick={startNewRanking} className="gap-2">
+                      <RefreshCw className="h-4 w-4" />
+                      Nouvelle partie
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             // ACTIVE GAME
             <>
