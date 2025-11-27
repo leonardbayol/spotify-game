@@ -1,114 +1,126 @@
 "use client"
 
-import type { Track } from "@/lib/spotify-types"
-import { useState } from "react"
-import { cn } from "@/lib/utils"
+import { useEffect, useState } from "react"
+import { useGame } from "@/lib/game-context"
 import { TrackCard } from "@/components/track-card"
 import { ScoreDisplay } from "@/components/score-display"
+import { PlaylistModal } from "@/components/playlist-modal"
 import { Button } from "@/components/ui/button"
+import { ArrowRight, Loader2 } from "lucide-react"
 
-interface DuelGameProps {
-  trackA: Track
-  trackB: Track
-  onPick: (choice: "A" | "B") => void
-  onNext: () => void
-  streak: number
-  bestStreak: number
-}
+export function DuelGame() {
+  const { tracks, duel, startNewDuel, selectDuel, nextDuelRound, isLoading, playlist } = useGame()
 
-export function DuelGame({
-  trackA,
-  trackB,
-  onPick,
-  onNext,
-  streak,
-  bestStreak,
-}: DuelGameProps) {
-  const [selected, setSelected] = useState<"A" | "B" | null>(null)
-  const [revealed, setRevealed] = useState(false)
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false)
 
-  const choose = (choice: "A" | "B") => {
-    if (revealed) return
-    setSelected(choice)
-    setTimeout(() => {
-      setRevealed(true)
-      onPick(choice)
-    }, 300)
+  useEffect(() => {
+    if (!playlist && !isLoading) {
+      setShowPlaylistModal(true)
+    }
+  }, [playlist, isLoading])
+
+  useEffect(() => {
+    if (tracks.length > 0 && !duel.leftTrack) {
+      startNewDuel()
+    }
+  }, [tracks, duel.leftTrack, startNewDuel])
+
+  const leftWins =
+    duel.revealed && duel.leftTrack && duel.rightTrack && duel.leftTrack.popularity >= duel.rightTrack.popularity
+  const rightWins =
+    duel.revealed && duel.leftTrack && duel.rightTrack && duel.rightTrack.popularity >= duel.leftTrack.popularity
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Chargement de la playlist...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Si les tracks ne sont pas encore chargées
+  if (!duel.leftTrack || !duel.rightTrack) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <p className="text-muted-foreground text-center">Chargement des morceaux...</p>
+      </div>
+    )
   }
 
   return (
-    <div
-      className={cn(
-        "flex flex-col justify-between min-h-[calc(100vh-64px)] px-4 py-4 gap-4"
-      )}
-    >
-      {/* Top section: title + score */}
-      <div className="flex flex-col gap-3 items-center">
-        <h1 className="text-center text-2xl md:text-3xl font-bold">
-          Qui est le plus <span className="text-primary">populaire</span> ?
-        </h1>
-        <ScoreDisplay streak={streak} bestStreak={bestStreak} />
-      </div>
+    <>
+      <div className="flex flex-col justify-between min-h-[calc(100vh-64px)] px-4 py-4 gap-4">
+        {/* Header */}
+        <div className="flex flex-col gap-3 items-center">
+          <h1 className="text-center text-3xl md:text-4xl font-black">
+            Qui est le plus <span className="text-primary">populaire</span> ?
+          </h1>
+          <ScoreDisplay streak={duel.streak} bestStreak={duel.bestStreak} />
+        </div>
 
-      {/* Duel cards */}
-      <div className="flex-1 flex flex-col justify-center items-center relative w-full gap-4">
-        <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-md gap-4">
-          {/* Track A */}
-          <div className="flex-1">
-            <TrackCard
-              track={trackA}
-              onClick={() => choose("A")}
-              selected={selected === "A"}
-              revealed={revealed}
-              isWinner={revealed && trackA.popularity > trackB.popularity}
-              isLoser={revealed && trackA.popularity < trackB.popularity}
-              showPopularity={revealed}
-              size="small"
-            />
+        {/* Duel Board */}
+        <div className="flex-1 flex flex-col justify-center items-center relative w-full gap-4">
+          <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-md gap-4">
+            {/* Track A */}
+            <div className="flex-1">
+              <TrackCard
+                track={duel.leftTrack}
+                onClick={() => selectDuel("left")}
+                selected={duel.selected === "left"}
+                revealed={duel.revealed}
+                isWinner={leftWins || false}
+                isLoser={duel.revealed && !leftWins}
+                showPopularity={duel.revealed}
+                size="small"
+              />
+            </div>
+
+            {/* Track B */}
+            <div className="flex-1">
+              <TrackCard
+                track={duel.rightTrack}
+                onClick={() => selectDuel("right")}
+                selected={duel.selected === "right"}
+                revealed={duel.revealed}
+                isWinner={rightWins || false}
+                isLoser={duel.revealed && !rightWins}
+                showPopularity={duel.revealed}
+                size="small"
+              />
+            </div>
           </div>
 
-          {/* Track B */}
-          <div className="flex-1">
-            <TrackCard
-              track={trackB}
-              onClick={() => choose("B")}
-              selected={selected === "B"}
-              revealed={revealed}
-              isWinner={revealed && trackB.popularity > trackA.popularity}
-              isLoser={revealed && trackB.popularity < trackA.popularity}
-              showPopularity={revealed}
-              size="small"
-            />
+          {/* VS badge */}
+          <div className="absolute z-20 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+            <span className="bg-secondary px-3 py-1 rounded-full text-sm font-bold shadow">
+              VS
+            </span>
           </div>
         </div>
 
-        {/* VS badge */}
-        <div className="absolute z-20 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-          <span className="bg-secondary px-3 py-1 rounded-full text-sm font-bold shadow">
-            VS
-          </span>
+        {/* Next round button */}
+        <div className="w-full pb-4">
+          {duel.revealed ? (
+            <Button
+              onClick={nextDuelRound}
+              size="lg"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+            >
+              Manche suivante
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <p className="text-center text-muted-foreground text-sm">
+              Clique sur une carte pour jouer
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Bottom section: next button */}
-      <div className="w-full pb-4">
-        {revealed ? (
-          <Button
-            className="w-full text-lg py-4"
-            onClick={() => {
-              setRevealed(false)
-              setSelected(null)
-              onNext()
-            }}
-          >
-            Manche suivante
-          </Button>
-        ) : (
-          <p className="text-center text-muted-foreground text-sm">
-            Clique sur une carte pour jouer
-          </p>
-        )}
-      </div>
-    </div>
+      <PlaylistModal open={showPlaylistModal} onOpenChange={setShowPlaylistModal} />
+    </>
   )
 }
