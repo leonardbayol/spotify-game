@@ -116,15 +116,23 @@ export function SortableTrackList(props: SortableTrackListProps) {
   const [activeId, setActiveId] = useState<string | null>(null)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, {
+    useSensor(PointerSensor, {
       activationConstraint: {
-        delay: 120, // empêche le scroll de prendre le dessus
-        tolerance: 5,
+        distance: 4, // drag s'active très facilement sans bloquer le scroll
       },
     }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        distance: 4, // indispensable pour éviter le menu copier/coller sur iOS
+      },
+    }),
+
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
   )
+
 
   const orderedTracks = order.map((id) => tracks.find((t) => t.id === id)!).filter(Boolean)
   const activeTrack = activeId ? tracks.find((t) => t.id === activeId) : null
