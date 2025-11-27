@@ -50,7 +50,7 @@ export function DuelGame() {
         {/* Header + Score */}
         <div className="flex flex-col gap-3 items-center">
           <h1 className="text-center text-3xl md:text-4xl font-black">
-            Qui est le plus <span className="text-primary">populaire</span> ?
+            Quel son est le plus <span className="text-primary">populaire</span> ?
           </h1>
           <ScoreDisplay streak={duel.streak} bestStreak={duel.bestStreak} />
         </div>

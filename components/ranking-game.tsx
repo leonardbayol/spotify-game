@@ -6,7 +6,7 @@ import { SortableTrackList } from "@/components/sortable-track-list"
 import { PlaylistModal } from "@/components/playlist-modal"
 import { PlaylistBanner } from "@/components/playlist-banner"
 import { Button } from "@/components/ui/button"
-import { Loader2, Trophy, RefreshCw, GripVertical } from "lucide-react"
+import { Loader2, Trophy, RefreshCw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Track } from "@/lib/spotify-types"
 
@@ -29,8 +29,12 @@ export function RankingGame() {
 
   const correctOrder = [...ranking.tracks].sort((a, b) => b.popularity - a.popularity).map((t) => t.id)
 
-  const correctTracks = correctOrder.map((id) => ranking.tracks.find((t) => t.id === id)).filter(Boolean) as Track[]
-  const userTracks = ranking.userOrder.map((id) => ranking.tracks.find((t) => t.id === id)).filter(Boolean) as Track[]
+  const correctTracks = correctOrder
+    .map((id) => ranking.tracks.find((t) => t.id === id))
+    .filter(Boolean) as Track[]
+  const userTracks = ranking.userOrder
+    .map((id) => ranking.tracks.find((t) => t.id === id))
+    .filter(Boolean) as Track[]
 
   if (isLoading) {
     return (
@@ -45,52 +49,21 @@ export function RankingGame() {
 
   return (
     <>
-      <div className="container flex-1 px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+      <div className="flex flex-col items-center min-h-[calc(100vh-64px)] px-4 py-4">
+        <div className="w-full max-w-3xl">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-black mb-2">
-              Classe le <span className="text-primary">Top 10</span>
-            </h1>
+          <div className="text-center">
+            <h1 className="text-3xl md:text-4xl font-black mb-2">Classe le <span className="text-primary">Top 10</span></h1>
           </div>
 
           {ranking.tracks.length > 0 ? (
             <>
-              {ranking.validated && (
-                <div className="mb-8 text-center">
-                  <div
-                    className={cn(
-                      "inline-flex items-center gap-3 px-6 py-4 rounded-2xl",
-                      ranking.score >= 7
-                        ? "bg-primary/20"
-                        : ranking.score >= 4
-                          ? "bg-yellow-500/20"
-                          : "bg-destructive/20",
-                    )}
-                  >
-                    <Trophy
-                      className={cn(
-                        "h-8 w-8",
-                        ranking.score >= 7
-                          ? "text-primary"
-                          : ranking.score >= 4
-                            ? "text-yellow-500"
-                            : "text-destructive",
-                      )}
-                    />
-                    <div className="text-left">
-                      <p className="text-sm text-muted-foreground">Score</p>
-                      <p className="text-3xl font-black">{ranking.score}/10</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
+              {/* If validated show results */}
               {ranking.validated ? (
-                <div className="grid md:grid-cols-2 gap-6">
-                  {/* Correct order */}
+                <div className="grid md:grid-cols-2 gap-4 mt-4">
+                  {/* Left: correct */}
                   <div>
-                    <h3 className="text-lg font-bold mb-4 text-center text-primary">Classement correct</h3>
+                    <h3 className="text-lg font-bold mb-3 text-center text-primary">Classement correct</h3>
                     <div className="space-y-2">
                       {correctTracks.map((track, index) => (
                         <div
@@ -115,9 +88,9 @@ export function RankingGame() {
                     </div>
                   </div>
 
-                  {/* User order */}
+                  {/* Right: user */}
                   <div>
-                    <h3 className="text-lg font-bold mb-4 text-center">Ton classement</h3>
+                    <h3 className="text-lg font-bold mb-3 text-center">Ton classement</h3>
                     <div className="space-y-2">
                       {userTracks.map((track, index) => {
                         const isCorrect = correctOrder[index] === track.id
@@ -160,36 +133,51 @@ export function RankingGame() {
                   </div>
                 </div>
               ) : (
-                /* Active game - sortable list */
-                <div className="max-w-2xl mx-auto">
-                  <SortableTrackList
-                    tracks={ranking.tracks}
-                    order={ranking.userOrder}
-                    onOrderChange={updateRankingOrder}
-                    revealed={false}
-                    correctOrder={correctOrder}
-                    disabled={false}
-                  />
+                /* Active game - sortable list
+                   layout: header top, list (scrollable internally) center, actions bottom
+                   we keep the page height fixed so main page doesn't scroll
+                */
+                <div className="mt-4 flex flex-col items-center">
+                  {/* container that will contain the sortable list and scroll internally if needed */}
+                  <div
+                    className="w-full max-w-2xl bg-transparent"
+                    // reserve height so header + footer remain visible; adjust calc if you change paddings/heights
+                    style={{ maxHeight: "calc(100vh - 220px)" }}
+                  >
+                    <div className="h-full overflow-auto">
+                      <SortableTrackList
+                        tracks={ranking.tracks}
+                        order={ranking.userOrder}
+                        onOrderChange={updateRankingOrder}
+                        revealed={false}
+                        correctOrder={correctOrder}
+                        disabled={false}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Actions - footer fixed visually under the list */}
+                  <div className="w-full max-w-2xl flex justify-center mt-4">
+                    <Button
+                      onClick={validateRanking}
+                      size="lg"
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 max-w-[420px]"
+                    >
+                      Valider mon classement
+                    </Button>
+                  </div>
                 </div>
               )}
 
-              {/* Actions */}
-              <div className="mt-8 flex justify-center gap-4">
-                {!ranking.validated ? (
-                  <Button
-                    onClick={validateRanking}
-                    size="lg"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    Valider mon classement
-                  </Button>
-                ) : (
-                  <Button onClick={startNewRanking} size="lg" variant="outline" className="gap-2 bg-transparent">
+              {/* If validated show also the score + new game button */}
+              {ranking.validated && (
+                <div className="mt-6 flex justify-center gap-4">
+                  <Button onClick={startNewRanking} size="lg" variant="outline" className="gap-2 bg-transparent max-w-[420px]">
                     <RefreshCw className="h-4 w-4" />
                     Nouvelle partie
                   </Button>
-                )}
-              </div>
+                </div>
+              )}
             </>
           ) : (
             <div className="text-center py-12">
