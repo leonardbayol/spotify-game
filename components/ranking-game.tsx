@@ -45,8 +45,6 @@ export function RankingGame() {
 
   return (
     <>
-      {playlist && <PlaylistBanner onChangePlaylist={() => setShowPlaylistModal(true)} />}
-
       <div className="container flex-1 px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}

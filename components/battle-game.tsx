@@ -418,21 +418,6 @@ export function BattleGame() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
-                    <img
-                      src={playlist.image || "/placeholder.svg"}
-                      alt=""
-                      className="w-12 h-12 rounded-lg object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{playlist.name}</p>
-                      <p className="text-sm text-muted-foreground">{tracks.length} titres</p>
-                    </div>
-                    <Button variant="ghost" size="sm" onClick={() => setShowPlaylistModal(true)}>
-                      Changer
-                    </Button>
-                  </div>
-
                   <Input
                     value={playerName}
                     onChange={(e) => setPlayerName(e.target.value)}
