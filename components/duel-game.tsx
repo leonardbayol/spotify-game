@@ -61,7 +61,7 @@ export function DuelGame() {
         </div>
 
         {/* Duel Board */}
-        <div className="relative flex w-full max-w-md gap-4 justify-between items-center">
+        <div className="relative flex w-full max-w-md gap-4 justify-between items-center mt-1">
           {/* Left track */}
           <TrackCard
             track={duel.leftTrack}
@@ -72,6 +72,7 @@ export function DuelGame() {
             isLoser={duel.revealed && !leftWins}
             showPopularity={duel.revealed}
             size="small"
+            className="flex-1 flex flex-col justify-between min-h-[160px]" // fixe hauteur min pour feat
           />
 
           {/* Right track */}
@@ -84,6 +85,7 @@ export function DuelGame() {
             isLoser={duel.revealed && !rightWins}
             showPopularity={duel.revealed}
             size="small"
+            className="flex-1 flex flex-col justify-between min-h-[160px]" // même hauteur
           />
 
           {/* VS badge centered vertically */}
@@ -94,11 +96,11 @@ export function DuelGame() {
 
         {/* Next round button */}
         {duel.revealed && (
-          <div className="w-full flex justify-center mt-4">
+          <div className="w-full flex justify-center mt-2">
             <Button
               onClick={nextDuelRound}
               size="lg"
-              className="w-full max-w-[calc(100%)] bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+              className="max-w-md w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
             >
               Manche suivante
               <ArrowRight className="h-4 w-4" />
