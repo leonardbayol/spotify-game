@@ -158,15 +158,18 @@ export function RankingGame() {
             ) : (
               <>
                 {/* TRACKLIST (scrollable) */}
-                <div className="w-full max-w-2xl">
-                  <SortableTrackList
-                    tracks={ranking.tracks}
-                    order={ranking.userOrder}
-                    onOrderChange={updateRankingOrder}
-                    revealed={false}
-                    correctOrder={correctOrder}
-                    disabled={false}
-                  />
+                <div className="w-full max-w-2xl mx-auto">
+                  {/* Reserve height so header + footer remain visible; adjust calc if you change paddings/heights */}
+                  <div style={{ maxHeight: "calc(100vh - 260px)" }} className="overflow-auto">
+                    <SortableTrackList
+                      tracks={ranking.tracks}
+                      order={ranking.userOrder}
+                      onOrderChange={updateRankingOrder}
+                      revealed={false}
+                      correctOrder={correctOrder}
+                      disabled={false}
+                    />
+                  </div>
                 </div>
 
                 {/* BUTTON BELOW LIST */}
