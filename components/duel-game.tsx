@@ -51,9 +51,6 @@ export function DuelGame() {
             <h1 className="text-3xl md:text-4xl font-black mb-2">
               Qui est le plus <span className="text-primary">populaire</span> ?
             </h1>
-            <p className="text-muted-foreground max-w-md mx-auto flex items-center justify-center gap-2">
-              Clique sur le titre que tu penses être le plus écouté sur Spotify.
-            </p>
           </div>
 
           {/* Score */}

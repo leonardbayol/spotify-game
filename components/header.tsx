@@ -25,11 +25,8 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary">
-            <Music className="h-5 w-5 text-primary-foreground" />
-          </div>
           <span className="font-bold text-xl tracking-tight hidden sm:block group-hover:text-primary transition-colors">
-            Spotify Games
+            Spotifyght
           </span>
         </Link>
 

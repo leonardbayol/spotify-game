@@ -52,11 +52,6 @@ export function RankingGame() {
             <h1 className="text-3xl md:text-4xl font-black mb-2">
               Classe le <span className="text-primary">Top 10</span>
             </h1>
-            {!ranking.validated && (
-              <p className="text-muted-foreground max-w-md mx-auto flex items-center justify-center gap-2">
-                Glisse les titres pour les classer du plus au moins populaire.
-              </p>
-            )}
           </div>
 
           {ranking.tracks.length > 0 ? (
