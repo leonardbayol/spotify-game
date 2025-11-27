@@ -379,7 +379,7 @@ export function BattleGame() {
               <div className="space-y-2">
                 <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
                   <Users className="w-6 h-6 text-primary" />
-                  Mode 1v1 en ligne
+                  Mode en ligne
                 </h2>
                 <p className="text-muted-foreground">Créez un salon et affrontez vos amis en temps réel !</p>
               </div>

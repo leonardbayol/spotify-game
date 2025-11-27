@@ -1,14 +1,11 @@
 "use client"
 
-import { useState } from "react"
 import { GameCard } from "@/components/game-card"
-import { PlaylistModal } from "@/components/playlist-modal"
 import { Button } from "@/components/ui/button"
 import { useGame } from "@/lib/game-context"
 import { Swords, Trophy, Users, Music, Sparkles } from "lucide-react"
 
 export function HomePage() {
-  const [showPlaylistModal, setShowPlaylistModal] = useState(false)
   const { playlist } = useGame()
 
   return (
@@ -26,19 +23,15 @@ export function HomePage() {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 text-balance">
-            Devinez quel titre est le plus populaire, classez des morceaux par popularité et affrontez vos amis dans des
-            duels épiques.
+            Devinez quel titre est le plus populaire, classez des morceaux par popularité
+            et affrontez vos amis dans des duels épiques.
           </p>
 
+          {/* Playlist info (plus d'ouverture de modal ici) */}
           {!playlist ? (
-            <Button
-              onClick={() => setShowPlaylistModal(true)}
-              size="lg"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-lg px-8"
-            >
-              <Music className="h-5 w-5" />
-              Charger une playlist
-            </Button>
+            <p className="text-muted-foreground">
+              Choisissez une playlist depuis la barre de navigation.
+            </p>
           ) : (
             <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-secondary">
               <img
@@ -47,14 +40,6 @@ export function HomePage() {
                 className="w-8 h-8 rounded-md object-cover"
               />
               <span className="font-medium">{playlist.name}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowPlaylistModal(true)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Changer
-              </Button>
             </div>
           )}
         </div>
@@ -96,8 +81,6 @@ export function HomePage() {
           </p>
         </div>
       </div>
-
-      <PlaylistModal open={showPlaylistModal} onOpenChange={setShowPlaylistModal} />
     </div>
   )
 }
