@@ -51,7 +51,7 @@ export function DuelGame() {
 
   return (
     <>
-      <div className="flex flex-col justify-between min-h-[calc(100vh-64px)] px-4 py-4 gap-4 items-center">
+      <div className="flex flex-col justify-between min-h-[calc(100vh-64px)] px-4 py-4 gap-1 items-center">
         {/* Header */}
         <div className="flex flex-col gap-3 items-center">
           <h1 className="text-center text-3xl md:text-4xl font-black">
