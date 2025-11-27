@@ -47,10 +47,13 @@ export function RankingGame() {
     )
   }
 
-  const renderMobileTrack = (track: Track, index: number) => (
+  const renderMobileTrack = (track: Track, isCorrect: boolean) => (
     <div
       key={track.id}
-      className="flex flex-col items-center gap-1 p-1 rounded-xl border bg-card"
+      className={cn(
+        "flex flex-col items-center gap-1 p-1 rounded-xl border",
+        isCorrect ? "bg-primary/10 border-primary/40" : "bg-destructive/10 border-destructive/40"
+      )}
     >
       <div className="w-16 h-16">
         <img src={track.cover || "/placeholder.svg"} alt={track.name} className="w-full h-full object-cover rounded-lg" />
@@ -102,18 +105,29 @@ export function RankingGame() {
               <Button onClick={() => setShowPlaylistModal(true)}>Charger une playlist</Button>
             </div>
           ) : ranking.validated ? (
-            // VALIDATED: show results
+            // VALIDATED RESULTS
             <>
               {isMobile ? (
-                // MOBILE: horizontal grids
+                // MOBILE: horizontal 2 lignes de 5 tracks
                 <div className="w-full flex flex-col gap-4 items-center">
-                  <div className="flex gap-2 justify-center flex-wrap">
-                    {correctTracks.map((track, idx) => renderMobileTrack(track, idx))}
-                  </div>
-                  <div className="flex gap-2 justify-center flex-wrap">
-                    {userTracks.map((track, idx) => renderMobileTrack(track, idx))}
+                  <div className="flex flex-col items-center">
+                    <h3 className="text-lg font-bold text-center text-primary mb-2">Classement correct</h3>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {correctTracks.map((track, idx) => renderMobileTrack(track, true))}
+                    </div>
                   </div>
 
+                  <div className="flex flex-col items-center">
+                    <h3 className="text-lg font-bold text-center mb-2">Ton classement</h3>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {userTracks.map((track, idx) => {
+                        const isCorrect = correctOrder[idx] === track.id
+                        return renderMobileTrack(track, isCorrect)
+                      })}
+                    </div>
+                  </div>
+
+                  {/* BUTTON BELOW */}
                   <div className="flex justify-center mt-4 w-full">
                     <Button variant="outline" onClick={startNewRanking} className="gap-2">
                       <RefreshCw className="h-4 w-4" />
@@ -122,7 +136,7 @@ export function RankingGame() {
                   </div>
                 </div>
               ) : (
-                // DESKTOP: vertical lists side by side
+                // DESKTOP: vertical columns side-by-side
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-center text-primary mb-3">Classement correct</h3>
@@ -139,13 +153,6 @@ export function RankingGame() {
                         return renderDesktopTrack(track, idx, isCorrect)
                       })}
                     </div>
-                  </div>
-
-                  <div className="flex justify-center mt-6">
-                    <Button variant="outline" onClick={startNewRanking} className="gap-2">
-                      <RefreshCw className="h-4 w-4" />
-                      Nouvelle partie
-                    </Button>
                   </div>
                 </div>
               )}
@@ -170,6 +177,16 @@ export function RankingGame() {
                 </Button>
               </div>
             </>
+          )}
+
+          {/* DESKTOP BUTTON AT BOTTOM */}
+          {!isMobile && ranking.validated && (
+            <div className="flex justify-center mt-6 w-full">
+              <Button variant="outline" onClick={startNewRanking} className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Nouvelle partie
+              </Button>
+            </div>
           )}
         </div>
       </div>
