@@ -40,32 +40,6 @@ function generateRoomCode(): string {
   return code
 }
 
-// Fonction pour choisir 10 tracks avec popularité unique
-function select10UniquePopularity(tracks: Track[]): Track[] {
-  const popularityMap = new Map<number, Track[]>()
-  for (const track of tracks) {
-    if (!popularityMap.has(track.popularity)) {
-      popularityMap.set(track.popularity, [])
-    }
-    popularityMap.get(track.popularity)!.push(track)
-  }
-
-  const uniqueTracks: Track[] = []
-  const popularities = Array.from(popularityMap.keys()).sort(() => Math.random() - 0.5)
-
-  for (const pop of popularities) {
-    const candidates = popularityMap.get(pop)!
-    uniqueTracks.push(candidates[Math.floor(Math.random() * candidates.length)])
-    if (uniqueTracks.length === 10) break
-  }
-
-  if (uniqueTracks.length < 10) {
-    throw new Error("Impossible de sélectionner 10 tracks avec popularités uniques")
-  }
-
-  return uniqueTracks
-}
-
 // POST - Create a new room
 export async function POST(request: Request) {
   try {
@@ -78,9 +52,8 @@ export async function POST(request: Request) {
     const roomCode = generateRoomCode()
     const hostId = crypto.randomUUID()
 
-    // Sélectionner 10 tracks avec popularité unique
-    const roundTracks = select10UniquePopularity(tracks)
-
+    const shuffledAll = [...tracks].sort(() => Math.random() - 0.5)
+    const roundTracks = shuffledAll.slice(0, 10)
     const correctOrder = [...roundTracks].sort((a, b) => b.popularity - a.popularity).map((t) => t.id)
     const initialOrder = roundTracks.map((t) => t.id)
 
@@ -99,7 +72,7 @@ export async function POST(request: Request) {
           order: initialOrder,
           score: 0,
           validated: false,
-          joinedAt: Date.now(),
+          joinedAt: Date.now(), // Track join time
         },
       ],
       status: "waiting",
