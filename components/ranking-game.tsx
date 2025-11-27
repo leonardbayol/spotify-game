@@ -69,9 +69,9 @@ export function RankingGame() {
                 </div>
 
                 {/* RESULTS SIDE-BY-SIDE EVEN ON MOBILE */}
-                <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <div className="flex flex-wrap gap-4 w-full">
                   {/* Correct order */}
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-[45%]">
                     <h3 className="text-lg font-bold text-center text-primary mb-3">
                       Classement correct
                     </h3>
@@ -99,7 +99,7 @@ export function RankingGame() {
                   </div>
 
                   {/* User order */}
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-[45%]">
                     <h3 className="text-lg font-bold text-center mb-3">Ton classement</h3>
                     <div className="space-y-2">
                       {userTracks.map((track, index) => {
@@ -157,6 +157,11 @@ export function RankingGame() {
               </>
             ) : (
               <>
+                {/* TITLE ONLY WHEN NOT VALIDATED */}
+                <h1 className="text-3xl md:text-4xl font-black text-center mb-4">
+                  Classe le <span className="text-primary">Top 10</span>
+                </h1>
+
                 {/* TRACKLIST (sortable) */}
                 <div className="w-full max-w-2xl">
                   <SortableTrackList
