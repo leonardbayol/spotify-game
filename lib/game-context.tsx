@@ -126,8 +126,25 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [startNewDuel])
 
   const startNewRanking = useCallback(() => {
-    const selectedTracks = getRandomTracks(tracks, Math.min(10, tracks.length))
-    const shuffled = [...selectedTracks].sort(() => Math.random() - 0.5)
+    // 1. Regrouper par popularité
+    const uniqueByPopularity = new Map();
+
+    for (const track of tracks) {
+      if (!uniqueByPopularity.has(track.popularity)) {
+        uniqueByPopularity.set(track.popularity, track);
+      }
+    }
+
+    // 2. Récupérer la liste des tracks uniques
+    const uniques = Array.from(uniqueByPopularity.values());
+
+    // 3. Mélanger
+    const shuffled = uniques.sort(() => Math.random() - 0.5);
+
+    // 4. Garder 10
+    const selectedTracks = shuffled.slice(0, 10);
+    const correctOrder = [...selectedTracks].sort((a, b) => b.popularity - a.popularity).map((t) => t.id)
+    const initialOrder = selectedTracks.map((t) => t.id)
     setRanking({
       tracks: selectedTracks,
       userOrder: shuffled.map((t) => t.id),
