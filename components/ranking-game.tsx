@@ -5,7 +5,7 @@ import { useGame } from "@/lib/game-context"
 import { SortableTrackList } from "@/components/sortable-track-list"
 import { PlaylistModal } from "@/components/playlist-modal"
 import { Button } from "@/components/ui/button"
-import { Loader2, RefreshCw } from "lucide-react"
+import { Loader2, Trophy, RefreshCw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Track } from "@/lib/spotify-types"
 
@@ -45,111 +45,87 @@ export function RankingGame() {
     )
   }
 
+  const isValidated = ranking.tracks.length > 0 && ranking.validated
+
   return (
     <>
       <div className="flex flex-col items-center min-h-[calc(100vh-64px)] px-4 py-4">
-        <div className="w-full max-w-3xl">
-          {ranking.tracks.length > 0 ? (
-            ranking.validated ? (
-              <>
-                {/* SCORE HEADER */}
-                <div className="flex justify-center mb-6">
-                  <div
-                    className={cn(
-                      "px-6 py-4 rounded-2xl flex items-center gap-4",
-                      ranking.score >= 7
-                        ? "bg-primary/20"
-                        : ranking.score >= 4
-                        ? "bg-yellow-500/20"
-                        : "bg-destructive/20"
-                    )}
-                  >
-                    <span className="text-4xl font-black">{ranking.score}/10</span>
-                  </div>
-                </div>
+        <div className="w-full max-w-3xl flex flex-col items-center">
 
-                {/* RESULTS SIDE-BY-SIDE EVEN ON MOBILE */}
-                <div className="flex flex-wrap gap-4 w-full">
-                  {/* Correct order */}
-                  <div className="flex-1 min-w-[45%]">
-                    <h3 className="text-lg font-bold text-center text-primary mb-3">
+          {/* Header */}
+          {!isValidated && (
+            <h1 className="text-3xl md:text-4xl font-black text-center mb-4">
+              Classe le <span className="text-primary">Top 10</span>
+            </h1>
+          )}
+
+          {isValidated && (
+            <div className="mb-6 text-center">
+              <div className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-primary/20">
+                <Trophy className="h-8 w-8 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground">Score</p>
+                  <p className="text-3xl font-black">{ranking.score}/10</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {ranking.tracks.length > 0 ? (
+            isValidated ? (
+              <>
+                {/* RESULTS GRID */}
+                <div className="w-full flex flex-wrap justify-between gap-4 mt-2">
+                  {/* Correct */}
+                  <div className="w-[48%] flex flex-col items-center">
+                    <h3 className="text-sm md:text-lg font-bold text-center text-primary mb-2 whitespace-nowrap">
                       Classement correct
                     </h3>
-                    <div className="space-y-2">
+                    <div className="w-full flex flex-wrap justify-center gap-2">
                       {correctTracks.map((track, index) => (
-                        <div
-                          key={track.id}
-                          className="flex items-center gap-3 p-3 rounded-xl bg-card border border-primary/30"
-                        >
-                          <span className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
-                            {index + 1}
-                          </span>
-
-                          <img src={track.cover} className="w-10 h-10 rounded-lg object-cover" />
-
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate text-sm">{track.name}</p>
-                            <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
+                        <div key={track.id} className="flex flex-col items-center w-[45px] md:w-full">
+                          <div className="w-10 h-10 rounded-lg overflow-hidden mb-1">
+                            <img
+                              src={track.cover}
+                              alt={track.name}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
-
-                          <span className="text-primary text-sm font-bold">{track.popularity}</span>
+                          <p className="text-xs text-center truncate w-12 md:w-full">{track.name}</p>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* User order */}
-                  <div className="flex-1 min-w-[45%]">
-                    <h3 className="text-lg font-bold text-center mb-3">Ton classement</h3>
-                    <div className="space-y-2">
-                      {userTracks.map((track, index) => {
-                        const isCorrect = correctOrder[index] === track.id
-
-                        return (
-                          <div
-                            key={track.id}
-                            className={cn(
-                              "flex items-center gap-3 p-3 rounded-xl border",
-                              isCorrect
-                                ? "bg-primary/10 border-primary/40"
-                                : "bg-destructive/10 border-destructive/40"
-                            )}
-                          >
-                            <span
-                              className={cn(
-                                "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm",
-                                isCorrect
-                                  ? "bg-primary text-primary-foreground"
-                                  : "bg-destructive text-destructive-foreground"
-                              )}
-                            >
-                              {index + 1}
-                            </span>
-
-                            <img src={track.cover} className="w-10 h-10 rounded-lg object-cover" />
-
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate text-sm">{track.name}</p>
-                              <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
-                            </div>
-
-                            {isCorrect ? (
-                              <span className="text-primary text-sm font-bold">✓</span>
-                            ) : (
-                              <span className="text-destructive text-xs">
-                                #{correctOrder.indexOf(track.id) + 1}
-                              </span>
-                            )}
+                  {/* User */}
+                  <div className="w-[48%] flex flex-col items-center">
+                    <h3 className="text-sm md:text-lg font-bold text-center mb-2 whitespace-nowrap">
+                      Ton classement
+                    </h3>
+                    <div className="w-full flex flex-wrap justify-center gap-2">
+                      {userTracks.map((track, index) => (
+                        <div key={track.id} className="flex flex-col items-center w-[45px] md:w-full">
+                          <div className="w-10 h-10 rounded-lg overflow-hidden mb-1">
+                            <img
+                              src={track.cover}
+                              alt={track.name}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
-                        )
-                      })}
+                          <p className="text-xs text-center truncate w-12 md:w-full">{track.name}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
 
                 {/* NEW GAME BUTTON */}
-                <div className="flex justify-center mt-6">
-                  <Button variant="outline" onClick={startNewRanking} className="gap-2">
+                <div className="flex justify-center mt-6 w-full">
+                  <Button
+                    variant="outline"
+                    onClick={startNewRanking}
+                    className="gap-2"
+                  >
                     <RefreshCw className="h-4 w-4" />
                     Nouvelle partie
                   </Button>
@@ -157,26 +133,27 @@ export function RankingGame() {
               </>
             ) : (
               <>
-                {/* TITLE ONLY WHEN NOT VALIDATED */}
-                <h1 className="text-3xl md:text-4xl font-black text-center mb-4">
-                  Classe le <span className="text-primary">Top 10</span>
-                </h1>
-
                 {/* TRACKLIST (sortable) */}
-                <div className="w-full max-w-2xl">
-                  <SortableTrackList
-                    tracks={ranking.tracks}
-                    order={ranking.userOrder}
-                    onOrderChange={updateRankingOrder}
-                    revealed={false}
-                    correctOrder={correctOrder}
-                    disabled={false}
-                  />
+                <div className="flex justify-center w-full">
+                  <div className="w-full max-w-2xl">
+                    <SortableTrackList
+                      tracks={ranking.tracks}
+                      order={ranking.userOrder}
+                      onOrderChange={updateRankingOrder}
+                      revealed={false}
+                      correctOrder={correctOrder}
+                      disabled={false}
+                    />
+                  </div>
                 </div>
 
-                {/* VALIDATE BUTTON BELOW LIST */}
-                <div className="flex justify-center mt-6">
-                  <Button size="lg" className="w-full max-w-[400px]" onClick={validateRanking}>
+                {/* BUTTON BELOW LIST */}
+                <div className="flex justify-center mt-6 w-full">
+                  <Button
+                    size="lg"
+                    className="w-full max-w-[400px]"
+                    onClick={validateRanking}
+                  >
                     Valider mon classement
                   </Button>
                 </div>
