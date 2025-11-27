@@ -41,7 +41,6 @@ export function DuelGame() {
     )
   }
 
-  // Si les tracks ne sont pas encore chargées
   if (!duel.leftTrack || !duel.rightTrack) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -52,7 +51,7 @@ export function DuelGame() {
 
   return (
     <>
-      <div className="flex flex-col justify-between min-h-[calc(100vh-64px)] px-4 py-4 gap-4">
+      <div className="flex flex-col justify-between min-h-[calc(100vh-64px)] px-4 py-4 gap-4 items-center">
         {/* Header */}
         <div className="flex flex-col gap-3 items-center">
           <h1 className="text-center text-3xl md:text-4xl font-black">
@@ -62,60 +61,49 @@ export function DuelGame() {
         </div>
 
         {/* Duel Board */}
-        <div className="flex-1 flex flex-col justify-center items-center relative w-full gap-4">
-          <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-md gap-4">
-            {/* Track A */}
-            <div className="flex-1">
-              <TrackCard
-                track={duel.leftTrack}
-                onClick={() => selectDuel("left")}
-                selected={duel.selected === "left"}
-                revealed={duel.revealed}
-                isWinner={leftWins || false}
-                isLoser={duel.revealed && !leftWins}
-                showPopularity={duel.revealed}
-                size="small"
-              />
-            </div>
-
-            {/* Track B */}
-            <div className="flex-1">
-              <TrackCard
-                track={duel.rightTrack}
-                onClick={() => selectDuel("right")}
-                selected={duel.selected === "right"}
-                revealed={duel.revealed}
-                isWinner={rightWins || false}
-                isLoser={duel.revealed && !rightWins}
-                showPopularity={duel.revealed}
-                size="small"
-              />
-            </div>
+        <div className="flex flex-col items-center gap-4 w-full max-w-md">
+          <div className="flex w-full gap-4 justify-between">
+            <TrackCard
+              track={duel.leftTrack}
+              onClick={() => selectDuel("left")}
+              selected={duel.selected === "left"}
+              revealed={duel.revealed}
+              isWinner={leftWins || false}
+              isLoser={duel.revealed && !leftWins}
+              showPopularity={duel.revealed}
+              size="small"
+            />
+            <TrackCard
+              track={duel.rightTrack}
+              onClick={() => selectDuel("right")}
+              selected={duel.selected === "right"}
+              revealed={duel.revealed}
+              isWinner={rightWins || false}
+              isLoser={duel.revealed && !rightWins}
+              showPopularity={duel.revealed}
+              size="small"
+            />
           </div>
 
           {/* VS badge */}
-          <div className="absolute z-20 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          <div className="relative w-full flex justify-center -mt-12 z-20 pointer-events-none">
             <span className="bg-secondary px-3 py-1 rounded-full text-sm font-bold shadow">
               VS
             </span>
           </div>
-        </div>
 
-        {/* Next round button */}
-        <div className="w-full pb-4">
-          {duel.revealed ? (
-            <Button
-              onClick={nextDuelRound}
-              size="lg"
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-            >
-              Manche suivante
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          ) : (
-            <p className="text-center text-muted-foreground text-sm">
-              Clique sur une carte pour jouer
-            </p>
+          {/* Next round button */}
+          {duel.revealed && (
+            <div className="w-full flex justify-center">
+              <Button
+                onClick={nextDuelRound}
+                size="lg"
+                className="w-[calc(100%)] max-w-[calc(100%)] bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+              >
+                Manche suivante
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
           )}
         </div>
       </div>
