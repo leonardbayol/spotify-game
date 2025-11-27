@@ -197,8 +197,23 @@ export async function PUT(request: Request, { params }: { params: Promise<{ code
           return NextResponse.json({ error: "Only host can restart" }, { status: 403 })
         }
 
-        const shuffledAll = [...room.allTracks].sort(() => Math.random() - 0.5)
-        const newRoundTracks = shuffledAll.slice(0, 10)
+        // 1. Regrouper par popularité
+        const uniqueByPopularity = new Map();
+
+        for (const track of room.allTracks) {
+          if (!uniqueByPopularity.has(track.popularity)) {
+            uniqueByPopularity.set(track.popularity, track);
+          }
+        }
+
+        // 2. Récupérer la liste des tracks uniques
+        const uniques = Array.from(uniqueByPopularity.values());
+
+        // 3. Mélanger
+        const shuffled = uniques.sort(() => Math.random() - 0.5);
+
+        // 4. Garder 10
+        const newRoundTracks = shuffled.slice(0, 10);
         const newCorrectOrder = [...newRoundTracks].sort((a, b) => b.popularity - a.popularity).map((t) => t.id)
         const newInitialOrder = newRoundTracks.map((t) => t.id)
 

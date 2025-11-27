@@ -52,8 +52,23 @@ export async function POST(request: Request) {
     const roomCode = generateRoomCode()
     const hostId = crypto.randomUUID()
 
-    const shuffledAll = [...tracks].sort(() => Math.random() - 0.5)
-    const roundTracks = shuffledAll.slice(0, 10)
+    // 1. Regrouper par popularité
+    const uniqueByPopularity = new Map();
+
+    for (const track of tracks) {
+      if (!uniqueByPopularity.has(track.popularity)) {
+        uniqueByPopularity.set(track.popularity, track);
+      }
+    }
+
+    // 2. Récupérer la liste des tracks uniques
+    const uniques = Array.from(uniqueByPopularity.values());
+
+    // 3. Mélanger
+    const shuffled = uniques.sort(() => Math.random() - 0.5);
+
+    // 4. Garder 10
+    const roundTracks = shuffled.slice(0, 10);
     const correctOrder = [...roundTracks].sort((a, b) => b.popularity - a.popularity).map((t) => t.id)
     const initialOrder = roundTracks.map((t) => t.id)
 
