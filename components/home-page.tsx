@@ -1,13 +1,9 @@
 "use client"
 
 import { GameCard } from "@/components/game-card"
-import { Button } from "@/components/ui/button"
-import { useGame } from "@/lib/game-context"
-import { Swords, Trophy, Users, Music, Sparkles } from "lucide-react"
+import { Swords, Trophy, Users, Sparkles } from "lucide-react"
 
 export function HomePage() {
-  const { playlist } = useGame()
-
   return (
     <div className="container flex-1 px-4 py-12 md:py-20">
       <div className="max-w-4xl mx-auto">
@@ -26,22 +22,6 @@ export function HomePage() {
             Devinez quel titre est le plus populaire, classez des morceaux par popularité
             et affrontez vos amis dans des duels épiques.
           </p>
-
-          {/* Playlist info (plus d'ouverture de modal ici) */}
-          {!playlist ? (
-            <p className="text-muted-foreground">
-              Choisissez une playlist depuis la barre de navigation.
-            </p>
-          ) : (
-            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-secondary">
-              <img
-                src={playlist.image || "/placeholder.svg"}
-                alt={playlist.name}
-                className="w-8 h-8 rounded-md object-cover"
-              />
-              <span className="font-medium">{playlist.name}</span>
-            </div>
-          )}
         </div>
 
         {/* Game modes */}
@@ -66,8 +46,8 @@ export function HomePage() {
 
           <GameCard
             href="/battle"
-            title="Mode 1v1"
-            description="Affrontez un ami : qui classera le mieux les titres par popularité ?"
+            title="Mode en ligne"
+            description="Affrontez vos amis : qui classera le mieux les titres par popularité ?"
             icon={Users}
             gradient="bg-gradient-to-br from-blue-500 to-purple-600"
             delay={200}
