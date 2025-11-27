@@ -72,16 +72,18 @@ export function TrackCard({
         )}
       </div>
 
-      <div className={cn("p-4", size === "small" && "p-3")}>
+      <div className={cn("p-4", size === "small" ? "p-3" : "p-4")}>
         <h3 className={cn("font-bold truncate text-foreground", size === "small" ? "text-sm" : "text-lg")}>
           {track.name}
         </h3>
         <p className={cn("text-primary truncate", size === "small" ? "text-xs" : "text-sm")}>{track.artist}</p>
-        {track.featuring.length > 0 && (
-          <p className={cn("text-muted-foreground truncate", size === "small" ? "text-xs" : "text-sm")}>
-            feat. {track.featuring.join(", ")}
-          </p>
-        )}
+        {/* Bloc feat réservé à une hauteur fixe */}
+        <p className={cn(
+          "text-muted-foreground truncate",
+          size === "small" ? "text-xs h-[1.2rem]" : "text-sm h-[1.5rem]"
+        )}>
+          {track.featuring.length > 0 ? `feat. ${track.featuring.join(", ")}` : "\u00A0" /* espace insécable */}
+        </p>
         {size === "default" && <p className="text-xs text-muted-foreground mt-1">{track.releaseDate}</p>}
       </div>
     </div>

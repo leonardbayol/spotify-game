@@ -56,7 +56,7 @@ export function DuelGame() {
         </div>
 
         {/* Duel Board */}
-        <div className="relative flex w-full max-w-md gap-4 justify-between items-center mt-3">
+        <div className="relative flex w-full max-w-md gap-4 justify-between items-center mt-2">
           {/* Left track */}
           <TrackCard
             track={duel.leftTrack}
