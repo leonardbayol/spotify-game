@@ -10,19 +10,14 @@ import { ArrowRight, Loader2 } from "lucide-react"
 
 export function DuelGame() {
   const { tracks, duel, startNewDuel, selectDuel, nextDuelRound, isLoading, playlist } = useGame()
-
   const [showPlaylistModal, setShowPlaylistModal] = useState(false)
 
   useEffect(() => {
-    if (!playlist && !isLoading) {
-      setShowPlaylistModal(true)
-    }
+    if (!playlist && !isLoading) setShowPlaylistModal(true)
   }, [playlist, isLoading])
 
   useEffect(() => {
-    if (tracks.length > 0 && !duel.leftTrack) {
-      startNewDuel()
-    }
+    if (tracks.length > 0 && !duel.leftTrack) startNewDuel()
   }, [tracks, duel.leftTrack, startNewDuel])
 
   const leftWins =
@@ -61,7 +56,7 @@ export function DuelGame() {
         </div>
 
         {/* Duel Board */}
-        <div className="relative flex w-full max-w-md gap-4 justify-between items-center mt-1">
+        <div className="relative flex w-full max-w-md gap-4 justify-between items-center mt-3">
           {/* Left track */}
           <TrackCard
             track={duel.leftTrack}
@@ -72,7 +67,7 @@ export function DuelGame() {
             isLoser={duel.revealed && !leftWins}
             showPopularity={duel.revealed}
             size="small"
-            className="flex-1 flex flex-col justify-between min-h-[160px]" // fixe hauteur min pour feat
+            className="flex-1 flex flex-col justify-between min-h-[160px]" // même hauteur pour feat/non-feat
           />
 
           {/* Right track */}

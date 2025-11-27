@@ -12,6 +12,7 @@ interface TrackCardProps {
   isLoser?: boolean
   showPopularity?: boolean
   size?: "default" | "small"
+  className?: string
 }
 
 export function TrackCard({
@@ -23,6 +24,7 @@ export function TrackCard({
   isLoser,
   showPopularity,
   size = "default",
+  className,
 }: TrackCardProps) {
   const isClickable = onClick && !revealed
 
@@ -36,6 +38,7 @@ export function TrackCard({
         revealed && isWinner && "ring-4 ring-primary shadow-lg shadow-primary/20",
         revealed && isLoser && "ring-4 ring-destructive opacity-80",
         size === "small" ? "bg-card" : "bg-card",
+        className
       )}
     >
       <div className="relative aspect-square overflow-hidden">
