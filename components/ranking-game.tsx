@@ -79,22 +79,40 @@ export function RankingGame() {
   /* Mobile tile: fixed-size rectangle, cover on top, title below left-aligned */
   const MobileTile = ({ track, isCorrect }: { track: Track; isCorrect: boolean }) => {
     const bgClass = isCorrect ? "bg-primary/10 border-primary/40" : "bg-destructive/10 border-destructive/40"
+    const textClass = isCorrect ? "text-primary" : "text-destructive"
+
     return (
-      <div className={cn("flex flex-col rounded-lg border overflow-hidden", bgClass)}>
-        {/* fixed height for tile content so all are same size */}
+      <div className={cn("relative flex flex-col rounded-lg border overflow-hidden", bgClass)}>
+        
+        {/* Popularité en haut à droite */}
+        <span
+          className={cn(
+            "absolute top-1 right-1 text-[10px] font-bold bg-background/80 backdrop-blur px-1 py-0.5 rounded",
+            textClass
+          )}
+        >
+          {track.popularity}
+        </span>
+
+        {/* Cover */}
         <div className="w-full flex justify-start p-2">
           <div className="w-12 h-12 rounded-md overflow-hidden">
-            <img src={track.cover || "/placeholder.svg"} alt={track.name} className="w-full h-full object-cover" />
+            <img
+              src={track.cover || "/placeholder.svg"}
+              alt={track.name}
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
 
-        {/* title left-aligned under cover, single line */}
+        {/* Titre */}
         <div className="px-2 pb-2">
           <p className="text-xs font-medium text-left truncate max-w-full">{track.name}</p>
         </div>
       </div>
     )
   }
+
 
   return (
     <>
