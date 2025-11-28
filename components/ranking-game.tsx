@@ -71,7 +71,9 @@ export function RankingGame() {
           <p className="text-xs text-muted-foreground truncate">{track.featuring.length > 0 ? `feat. ${track.featuring.join(", ")}` : "\u00A0"}</p>
         </div>
 
-        <span className="text-sm font-bold text-primary">{track.popularity}</span>
+        <span className={cn("text-sm font-bold", isCorrect ? "text-primary" : "text-destructive")}>
+          {track.popularity}
+        </span>
       </div>
     )
   }
