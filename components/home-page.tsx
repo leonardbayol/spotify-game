@@ -2,7 +2,7 @@
 
 import { GameCard } from "@/components/game-card"
 import { Swords, Trophy, Users } from "lucide-react"
-import { InfoButton } from "@/components/info-button"  // ⬅️ On importe le bouton info
+import { InfoDuelPopup } from "@/components/info-button"  // ⬅️ On importe le bouton info
 
 export function HomePage() {
   return (
@@ -58,7 +58,7 @@ export function HomePage() {
       </div>
 
       {/* Floating Info Button */}
-      <InfoButton />
+      <InfoDuelPopup />
     </div>
   )
 }
