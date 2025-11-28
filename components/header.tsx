@@ -24,15 +24,18 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">
+
+        {/* LOGO MOBILE + DESKTOP */}
         <Link href="/" className="flex items-center gap-2 group">
           <span className="font-bold text-xl tracking-tight group-hover:text-primary transition-colors">
             Spotifyght
           </span>
         </Link>
 
-        {/* Desktop nav */}
+        {/* DESKTOP NAV */}
         <nav className="hidden md:flex items-center gap-3">
-          {/* Playlist section */}
+
+          {/* PLAYLIST DESKTOP */}
           {!playlist ? (
             <Button
               onClick={() => setShowPlaylistModal(true)}
@@ -58,10 +61,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setShowPlaylistModal(true)
-                  setMobileMenuOpen(false)
-                }}
+                onClick={() => setShowPlaylistModal(true)}
                 className="text-muted-foreground hover:text-foreground px-2"
               >
                 Changer
@@ -69,7 +69,7 @@ export function Header() {
             </div>
           )}
 
-          {/* Game modes */}
+          {/* NAV ITEMS */}
           {navItems.map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href}>
               <Button
@@ -79,7 +79,7 @@ export function Header() {
                   "gap-2",
                   pathname === href
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -89,7 +89,7 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Mobile menu button */}
+        {/* MOBILE MENU BUTTON */}
         <Button
           variant="ghost"
           size="icon"
@@ -100,11 +100,12 @@ export function Header() {
         </Button>
       </div>
 
-      {/* Mobile nav */}
+      {/* MOBILE NAV */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border/40 bg-background">
           <nav className="container flex flex-col gap-3 p-4">
 
+            {/* PLAYLIST MOBILE — VERSION PROPRE */}
             {!playlist ? (
               <Button
                 onClick={() => {
@@ -124,23 +125,27 @@ export function Header() {
                   alt={playlist.name}
                   className="w-10 h-10 rounded-md object-cover"
                 />
-                <div className="flex flex-col flex-1">
-                  <span className="font-medium truncate">{playlist.name}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setShowPlaylistModal(true)
-                      setMobileMenuOpen(false)
-                    }}
-                    className="text-muted-foreground hover:text-foreground px-0"
-                  >
-                    Changer
-                  </Button>
-                </div>
+
+                {/* NO FLEX-COL ANYMORE */}
+                <span className="font-medium flex-1 truncate">
+                  {playlist.name}
+                </span>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowPlaylistModal(true)
+                    setMobileMenuOpen(false)
+                  }}
+                  className="text-muted-foreground hover:text-foreground px-0"
+                >
+                  Changer
+                </Button>
               </div>
             )}
 
+            {/* NAV ITEMS MOBILE */}
             {navItems.map(({ href, label, icon: Icon }) => (
               <Link key={href} href={href} onClick={() => setMobileMenuOpen(false)}>
                 <Button
@@ -149,7 +154,7 @@ export function Header() {
                     "w-full justify-start gap-2",
                     pathname === href
                       ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground",
+                      : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -161,7 +166,7 @@ export function Header() {
         </div>
       )}
 
-      {/* Playlist Modal */}
+      {/* PLAYLIST MODAL */}
       <PlaylistModal open={showPlaylistModal} onOpenChange={setShowPlaylistModal} />
     </header>
   )
