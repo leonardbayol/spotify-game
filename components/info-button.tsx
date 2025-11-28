@@ -1,102 +1,133 @@
 "use client"
 
 import { useState } from "react"
-import { X, Linkedin } from "lucide-react"
+import { TrackCard } from "@/components/track-card"
+import { Button } from "@/components/ui/button"
+import { X } from "lucide-react"
 
-export function InfoDuelPopup() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [winner, setWinner] = useState<null | string>(null)
+interface InfoDuelPopupProps {
+  isOpen: boolean
+  onClose: () => void
+}
 
-  const handleCardClick = (name: string) => {
-    setWinner(name)
+export function InfoDuelPopup({ isOpen, onClose }: InfoDuelPopupProps) {
+  const [selected, setSelected] = useState<"leonard" | "nathan" | null>(null)
+  const [revealed, setRevealed] = useState(false)
+
+  // Définition des tracks "Nathan vs Léonard"
+  const leonard = {
+    id: "leonard",
+    name: "Léonard",
+    artist: "Product Manager",
+    featuring: [],
+    popularity: 100,
+    cover: "/leonard.jpg",
+    releaseDate: "2003-09-13",
   }
 
+  const nathan = {
+    id: "nathan",
+    name: "Nathan",
+    artist: "Data Analyst",
+    featuring: [],
+    popularity: 100,
+    cover: "/nathan.jpg",
+    releaseDate: "2003-04-24",
+  }
+
+  const handleSelect = (who: "leonard" | "nathan") => {
+    if (!revealed) {
+      setSelected(who)
+      setRevealed(true)
+    }
+  }
+
+  if (!isOpen) return null
+
   return (
-    <>
-      {/* Bouton info */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-black text-white flex items-center justify-center hover:bg-green-500 transition-colors z-50"
-      >
-        i
-      </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="relative bg-black text-white rounded-2xl shadow-lg max-w-2xl w-full p-6">
-            {/* Croix pour fermer */}
-            <button
-              onClick={() => {
-                setIsOpen(false)
-                setWinner(null)
-              }}
-              className="absolute top-4 right-4 text-white hover:text-green-500"
+      {/* Pop-up */}
+      <div className="relative z-10 bg-black text-white rounded-xl shadow-xl max-w-3xl w-full p-6 md:p-10 flex flex-col gap-6">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 hover:text-primary"
+        >
+          <X size={24} />
+        </button>
+
+        {/* Title */}
+        <h2 className="text-2xl md:text-3xl font-black text-center">
+          Qui est le plus populaire ?
+        </h2>
+
+        {/* Duel cards */}
+        <div className="flex flex-col md:flex-row gap-4 justify-center">
+          <div className="flex-1">
+            <TrackCard
+              track={leonard}
+              onClick={() => handleSelect("leonard")}
+              selected={selected === "leonard"}
+              revealed={revealed}
+              isWinner={true}
+              isLoser={false}
+              showPopularity={revealed}
+              size="small"
+              className="flex-1"
+            />
+            <div className="flex justify-center mt-2">
+            <a
+                href="https://www.linkedin.com/in/leonard-bayol"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-sm font-medium text-white gap-1"
             >
-              <X size={24} />
-            </button>
-
-            <h2 className="text-2xl font-bold text-center mb-6">
-              Qui est le plus populaire ?
-            </h2>
-
-            {/* Cards duel */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Léonard */}
-              <div
-                className="cursor-pointer bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl p-4 flex flex-col items-center hover:scale-105 transition-transform"
-                onClick={() => handleCardClick("Leonard")}
-              >
-                <img
-                  src="/leonard.jpg"
-                  alt="Leonard"
-                  className="w-24 h-24 rounded-full mb-2 object-cover"
-                />
-                <p className="font-bold text-lg">Léonard</p>
-                <p className="text-sm text-gray-200 mb-2">Product Manager</p>
-                <p className="font-bold text-xl">{winner ? "100" : "?"}</p>
-                <a
-                  href="https://www.linkedin.com/in/leonard-bayol"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 flex items-center gap-1 text-blue-400 hover:text-blue-600"
-                >
-                  <Linkedin size={16} /> LinkedIn
-                </a>
-              </div>
-
-              {/* Nathan */}
-              <div
-                className="cursor-pointer bg-gradient-to-br from-orange-500 to-red-600 rounded-xl p-4 flex flex-col items-center hover:scale-105 transition-transform"
-                onClick={() => handleCardClick("Nathan")}
-              >
-                <img
-                  src="/nathan.jpg"
-                  alt="Nathan"
-                  className="w-24 h-24 rounded-full mb-2 object-cover"
-                />
-                <p className="font-bold text-lg">Nathan</p>
-                <p className="text-sm text-gray-200 mb-2">Data Analyst</p>
-                <p className="font-bold text-xl">{winner ? "100" : "?"}</p>
-                <a
-                  href="https://www.linkedin.com/in/nathan-desbrosse"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-2 flex items-center gap-1 text-blue-400 hover:text-blue-600"
-                >
-                  <Linkedin size={16} /> LinkedIn
-                </a>
-              </div>
+                LinkedIn
+            </a>
             </div>
+          </div>
 
-            {/* Message égalité */}
-            {winner && (
-              <p className="mt-6 text-center text-gray-300">
-                {winner} et l'autre ont développé l'application à deux !
-              </p>
-            )}
+          <div className="flex-1">
+            <TrackCard
+              track={nathan}
+              onClick={() => handleSelect("nathan")}
+              selected={selected === "nathan"}
+              revealed={revealed}
+              isWinner={true}
+              isLoser={false}
+              showPopularity={revealed}
+              size="small"
+              className="flex-1"
+            />
+            <div className="flex justify-center mt-2">
+            <a
+                href="https://www.linkedin.com/in/ndesbrosse"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-sm font-medium text-white gap-1"
+            >
+                LinkedIn
+            </a>
+            </div>
           </div>
         </div>
-      )}
-    </>
+
+        {/* Score / message égalité */}
+        {revealed && (
+          <div className="text-center mt-4">
+            <p className="text-xl font-bold">Égalité : 100 vs 100</p>
+            <p className="text-sm mt-2">
+              Ils ont développé l'application à deux !
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

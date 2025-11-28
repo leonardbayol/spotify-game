@@ -1,10 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import { GameCard } from "@/components/game-card"
 import { Swords, Trophy, Users } from "lucide-react"
-import { InfoDuelPopup } from "@/components/info-button"  // ⬅️ On importe le bouton info
+import { InfoDuelPopup } from "@/components/info-button" // correction de l'import
 
 export function HomePage() {
+  const [isInfoOpen, setIsInfoOpen] = useState(false) // état de la pop-up
+
   return (
     <div className="container flex-1 px-4 py-12 md:py-20 relative">
       <div className="max-w-4xl mx-auto">
@@ -58,7 +61,18 @@ export function HomePage() {
       </div>
 
       {/* Floating Info Button */}
-      <InfoDuelPopup />
+      <button
+        className="fixed bottom-4 right-4 w-12 h-12 rounded-full bg-black text-white flex items-center justify-center hover:bg-green-600 transition"
+        onClick={() => setIsInfoOpen(true)}
+      >
+        i
+      </button>
+
+      {/* Pop-up */}
+      <InfoDuelPopup
+        isOpen={isInfoOpen}
+        onClose={() => setIsInfoOpen(false)}
+      />
     </div>
   )
 }
