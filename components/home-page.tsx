@@ -1,11 +1,12 @@
 "use client"
 
 import { GameCard } from "@/components/game-card"
-import { Swords, Trophy, Users, Sparkles } from "lucide-react"
+import { Swords, Trophy, Users } from "lucide-react"
+import { InfoButton } from "@/components/info-button"  // ⬅️ On importe le bouton info
 
 export function HomePage() {
   return (
-    <div className="container flex-1 px-4 py-12 md:py-20">
+    <div className="container flex-1 px-4 py-12 md:py-20 relative">
       <div className="max-w-4xl mx-auto">
         {/* Hero */}
         <div className="text-center mb-16">
@@ -55,6 +56,9 @@ export function HomePage() {
           </p>
         </div>
       </div>
+
+      {/* Floating Info Button */}
+      <InfoButton />
     </div>
   )
 }
