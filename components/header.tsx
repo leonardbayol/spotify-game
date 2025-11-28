@@ -28,7 +28,7 @@ export function Header() {
         {/* LOGO MOBILE + DESKTOP */}
         <Link href="/" className="flex items-center gap-2 group">
           <span className="font-bold text-xl tracking-tight group-hover:text-primary transition-colors">
-            Spotifyght
+            Spoti<span className="text-primary">fyght</span>
           </span>
         </Link>
 
