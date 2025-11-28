@@ -130,7 +130,6 @@ export function RankingGame() {
             <div className="flex items-center gap-3 justify-center mb-4">
               <Trophy className="h-6 w-6 text-yellow-500" />
               <div className="text-center">
-                <p className="text-sm text-muted-foreground">Score</p>
                 <p className="text-3xl font-black">{ranking.score}/10</p>
               </div>
             </div>

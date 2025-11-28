@@ -25,7 +25,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 group">
-          <span className="font-bold text-xl tracking-tight hidden sm:block group-hover:text-primary transition-colors">
+          <span className="font-bold text-xl tracking-tight group-hover:text-primary transition-colors">
             Spotifyght
           </span>
         </Link>
