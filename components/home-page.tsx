@@ -9,18 +9,12 @@ export function HomePage() {
       <div className="max-w-4xl mx-auto">
         {/* Hero */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-            <Sparkles className="h-4 w-4" />
-            Testez vos connaissances musicales
-          </div>
-
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-6">
-            <span className="text-primary">Spotify</span> Games
+            Spoti<span className="text-primary">fyght</span>
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 text-balance">
-            Devinez quel titre est le plus populaire, classez des morceaux par popularité
-            et affrontez vos amis dans des duels épiques.
+            Découvrez 3 modes de jeu différents basés sur la popularité* des sons Spotify
           </p>
         </div>
 
@@ -57,7 +51,7 @@ export function HomePage() {
         {/* Info */}
         <div className="mt-16 text-center">
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            La popularité d'un titre (0-100) est calculée par Spotify selon le nombre d'écoutes et leur récence.
+            *La popularité d'un titre (0-100) est calculée par Spotify selon le nombre d'écoutes et leur récence.
           </p>
         </div>
       </div>
