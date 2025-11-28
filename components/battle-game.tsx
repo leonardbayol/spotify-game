@@ -613,8 +613,6 @@ export function BattleGame() {
           {/* Results */}
           {phase === "results" && room && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-center">Résultats</h2>
-
               {/* Winner */}
               {(() => {
                 const sortedPlayers = [...room.players].sort((a, b) => b.score - a.score)
@@ -658,7 +656,7 @@ export function BattleGame() {
                       </div>
 
                       {/* Player's ranking */}
-                      <div className="flex gap-1 overflow-x-auto pb-1 px-1">
+                      <div className="grid grid-cols-10 gap-1">
                         {player.order.map((trackId, i) => {
                           const track = room.tracks.find((t) => t.id === trackId)
                           const isCorrect = room.correctOrder[i] === trackId
