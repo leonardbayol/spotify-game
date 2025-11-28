@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { X, Info } from "lucide-react"
+import { Info, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -11,7 +10,7 @@ export function InfoButton() {
 
   return (
     <>
-      {/* Floating button */}
+      {/* Floating Info Button */}
       <button
         onClick={() => setOpen(true)}
         className="
@@ -25,32 +24,37 @@ export function InfoButton() {
         <Info className="w-6 h-6" />
       </button>
 
-      {/* Popup */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md relative">
-          <button
-            className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
+      {/* Modal Overlay */}
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setOpen(false)}
-          >
-            <X className="w-5 h-5" />
-          </button>
+          />
 
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold">À propos</DialogTitle>
-          </DialogHeader>
+          {/* Modal content */}
+          <div className="relative z-50 max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            {/* Close Button */}
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              onClick={() => setOpen(false)}
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-          <div className="space-y-4 mt-2 text-sm text-muted-foreground">
-            <p>
-              Cette application a été créée grâce à la collaboration de :
+            <h2 className="text-xl font-bold mb-4 text-center">À propos</h2>
+
+            <p className="text-sm text-gray-600 mb-6 text-center">
+              Cette application a été créée par la collaboration :
             </p>
 
             <div className="grid grid-cols-2 gap-4">
-
-              {/* Leonard */}
+              {/* Léonard */}
               <Link
                 href="https://www.linkedin.com/in/leonard-bayol"
                 target="_blank"
-                className="group flex flex-col items-center p-3 rounded-lg border hover:bg-muted transition"
+                className="flex flex-col items-center p-2 rounded-lg border hover:bg-gray-100 transition"
               >
                 <Image
                   src="/leonard.jpg"
@@ -59,15 +63,15 @@ export function InfoButton() {
                   height={80}
                   className="rounded-full object-cover"
                 />
-                <span className="mt-2 font-medium text-foreground">Léonard Bayol</span>
-                <span className="text-xs text-muted-foreground">Product Manager</span>
+                <span className="mt-2 font-medium text-gray-900">Léonard Bayol</span>
+                <span className="text-xs text-gray-500">Product Manager</span>
               </Link>
 
               {/* Nathan */}
               <Link
                 href="https://www.linkedin.com/in/nathan-desbrosse"
                 target="_blank"
-                className="group flex flex-col items-center p-3 rounded-lg border hover:bg-muted transition"
+                className="flex flex-col items-center p-2 rounded-lg border hover:bg-gray-100 transition"
               >
                 <Image
                   src="/nathan.jpg"
@@ -76,14 +80,13 @@ export function InfoButton() {
                   height={80}
                   className="rounded-full object-cover"
                 />
-                <span className="mt-2 font-medium text-foreground">Nathan Desbrosse</span>
-                <span className="text-xs text-muted-foreground">Data Analyst</span>
+                <span className="mt-2 font-medium text-gray-900">Nathan Desbrosse</span>
+                <span className="text-xs text-gray-500">Data Analyst</span>
               </Link>
-
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </>
   )
 }
