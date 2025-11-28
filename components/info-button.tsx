@@ -1,89 +1,109 @@
 "use client"
 
 import { useState } from "react"
-import { Info, X } from "lucide-react"
+import { X, Linkedin } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { cn } from "@/lib/utils"
 
-export function InfoButton() {
+export function InfoDuelPopup() {
   const [open, setOpen] = useState(false)
+  const [duelResult, setDuelResult] = useState<null | "finished">(null)
+
+  const handleSelect = () => setDuelResult("finished")
 
   return (
     <>
       {/* Floating Info Button */}
       <button
         onClick={() => setOpen(true)}
-        className="
-          fixed bottom-6 right-6 z-50
-          w-12 h-12 rounded-full
-          bg-black text-white flex items-center justify-center
-          shadow-lg border border-white/10
-          hover:bg-green-600 transition
-        "
+        className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-black text-white flex items-center justify-center shadow-lg border border-white/10 hover:bg-green-600 transition"
       >
-        <Info className="w-6 h-6" />
+        i
       </button>
 
-      {/* Modal Overlay */}
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
+          {/* Overlay */}
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
 
-          {/* Modal content */}
-          <div className="relative z-50 max-w-md w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-            {/* Close Button */}
+          {/* Popup */}
+          <div className="relative z-50 max-w-3xl w-full mx-4 bg-black rounded-xl shadow-xl p-6 text-white">
+            {/* Close button */}
             <button
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              className="absolute top-4 right-4 text-white hover:text-green-500"
               onClick={() => setOpen(false)}
             >
               <X className="w-5 h-5" />
             </button>
 
-            <h2 className="text-xl font-bold mb-4 text-center">À propos</h2>
+            <h2 className="text-2xl font-bold text-center mb-6">Qui est le plus populaire ?</h2>
 
-            <p className="text-sm text-gray-600 mb-6 text-center">
-              Cette application a été créée par la collaboration :
-            </p>
-
-            <div className="grid grid-cols-2 gap-4">
-              {/* Léonard */}
-              <Link
-                href="https://www.linkedin.com/in/leonard-bayol"
-                target="_blank"
-                className="flex flex-col items-center p-2 rounded-lg border hover:bg-gray-100 transition"
-              >
-                <Image
-                  src="/leonard.jpg"
-                  alt="Léonard Bayol"
-                  width={80}
-                  height={80}
-                  className="rounded-full object-cover"
-                />
-                <span className="mt-2 font-medium text-gray-900">Léonard Bayol</span>
-                <span className="text-xs text-gray-500">Product Manager</span>
-              </Link>
-
-              {/* Nathan */}
-              <Link
-                href="https://www.linkedin.com/in/nathan-desbrosse"
-                target="_blank"
-                className="flex flex-col items-center p-2 rounded-lg border hover:bg-gray-100 transition"
-              >
-                <Image
-                  src="/nathan.jpg"
-                  alt="Nathan Desbrosse"
-                  width={80}
-                  height={80}
-                  className="rounded-full object-cover"
-                />
-                <span className="mt-2 font-medium text-gray-900">Nathan Desbrosse</span>
-                <span className="text-xs text-gray-500">Data Analyst</span>
-              </Link>
+            {/* Duel Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                {
+                  name: "Léonard",
+                  role: "Product Manager",
+                  photo: "/leonard.jpg",
+                  linkedin: "https://www.linkedin.com/in/leonard-bayol",
+                },
+                {
+                  name: "Nathan",
+                  role: "Data Analyst",
+                  photo: "/nathan.jpg",
+                  linkedin: "https://www.linkedin.com/in/nathan-desbrosse",
+                },
+              ].map((person) => (
+                <div
+                  key={person.name}
+                  onClick={handleSelect}
+                  className={cn(
+                    "cursor-pointer rounded-xl overflow-hidden shadow-lg transform transition hover:scale-105",
+                    "bg-gradient-to-br from-gray-800 to-gray-900"
+                  )}
+                >
+                  <div className="w-full h-48 relative">
+                    <Image
+                      src={person.photo}
+                      alt={person.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="p-4 text-center">
+                    <h3 className="text-lg font-bold">{person.name}</h3>
+                    <p className="text-sm text-gray-300">{person.role}</p>
+                  </div>
+                  {/* LinkedIn Button */}
+                  {duelResult && (
+                    <div className="flex justify-center pb-4">
+                      <Link
+                        href={person.linkedin}
+                        target="_blank"
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-500 rounded-full text-white font-medium text-sm transition"
+                      >
+                        <Linkedin className="w-4 h-4" />
+                        LinkedIn
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
+
+            {/* Result */}
+            {duelResult && (
+              <div className="mt-6 text-center space-y-2">
+                <p className="text-xl font-bold">100 vs 100</p>
+                <p className="text-gray-300">
+                  Ils ont développé l'application à deux !
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
