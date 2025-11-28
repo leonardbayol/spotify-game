@@ -23,7 +23,7 @@ export function HomePage() {
           <GameCard
             href="/duel"
             title="Mode Duel"
-            description="Deux titres s'affrontent : devine lequel est le plus populaire sur Spotify."
+            description="Deux titres : devine lequel est le plus populaire sur Spotify."
             icon={Swords}
             gradient="bg-gradient-to-br from-orange-500 to-red-600"
             delay={0}
@@ -32,7 +32,7 @@ export function HomePage() {
           <GameCard
             href="/ranking"
             title="Mode Classement"
-            description="Classe 10 titres du plus au moins populaire. Chaque position compte !"
+            description="Classe 10 titres du plus au moins populaire !"
             icon={Trophy}
             gradient="bg-gradient-to-br from-primary to-emerald-600"
             delay={100}
@@ -40,7 +40,7 @@ export function HomePage() {
 
           <GameCard
             href="/battle"
-            title="Mode en ligne"
+            title="Mode En ligne"
             description="Affrontez vos amis : qui classera le mieux les titres par popularité ?"
             icon={Users}
             gradient="bg-gradient-to-br from-blue-500 to-purple-600"
