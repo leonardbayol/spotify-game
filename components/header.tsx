@@ -44,19 +44,25 @@ export function Header() {
               Choisir une playlist
             </Button>
           ) : (
-            <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl bg-secondary border border-secondary/50">
+            <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-secondary border border-secondary/50">
               <img
                 src={playlist.image || "/placeholder.svg"}
                 alt={playlist.name}
-                className="w-8 h-8 rounded-md object-cover"
+                className="w-10 h-10 rounded-md object-cover"
               />
-              <span className="font-medium max-w-[150px] truncate">{playlist.name}</span>
+
+              <span className="font-medium flex-1 truncate">
+                {playlist.name}
+              </span>
 
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowPlaylistModal(true)}
-                className="text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  setShowPlaylistModal(true)
+                  setMobileMenuOpen(false)
+                }}
+                className="text-muted-foreground hover:text-foreground px-2"
               >
                 Changer
               </Button>
