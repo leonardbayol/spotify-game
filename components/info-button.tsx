@@ -37,12 +37,14 @@ export function InfoDuelPopup({ isOpen, onClose }: InfoDuelPopupProps) {
       {/* POPUP */}
       <div className="relative bg-black rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-xl max-h-[90vh] overflow-y-auto">
 
-        {/* Close button */}
+        {/* Close button — now OUTSIDE the duel grid */}
         <button
-          onClick={onClose}
-          className="absolute top-3 right-3 md:top-4 md:right-4 text-white hover:text-primary transition p-2"
+        onClick={onClose}
+        className="absolute -top-4 right-4 md:top-4 md:right-4 
+                    bg-black/80 backdrop-blur rounded-full p-2
+                    text-white hover:text-primary transition z-50"
         >
-          <X size={24} />
+        <X size={24} />
         </button>
 
         {/* Title */}
