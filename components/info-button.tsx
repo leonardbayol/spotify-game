@@ -1,8 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { TrackCard } from "@/components/track-card"
-import { Button } from "@/components/ui/button"
+import Image from "next/image"
 import { X } from "lucide-react"
 
 interface InfoDuelPopupProps {
@@ -11,122 +9,85 @@ interface InfoDuelPopupProps {
 }
 
 export function InfoDuelPopup({ isOpen, onClose }: InfoDuelPopupProps) {
-  const [selected, setSelected] = useState<"leonard" | "nathan" | null>(null)
-  const [revealed, setRevealed] = useState(false)
-
-  // Définition des tracks "Nathan vs Léonard"
-  const leonard = {
-    id: "leonard",
-    name: "Léonard",
-    artist: "Product Manager",
-    featuring: [],
-    popularity: 100,
-    cover: "/leonard.jpg",
-    releaseDate: "2003-09-13",
-  }
-
-  const nathan = {
-    id: "nathan",
-    name: "Nathan",
-    artist: "Data Analyst",
-    featuring: [],
-    popularity: 100,
-    cover: "/nathan.jpg",
-    releaseDate: "2003-04-24",
-  }
-
-  const handleSelect = (who: "leonard" | "nathan") => {
-    if (!revealed) {
-      setSelected(who)
-      setRevealed(true)
-    }
-  }
-
   if (!isOpen) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
-      />
+  const creators = [
+    {
+      name: "Léonard Bayol",
+      role: "Product Manager",
+      img: "/leonard.jpg",
+      popularity: 100,
+      linkedin: "https://www.linkedin.com/in/leonard-bayol/"
+    },
+    {
+      name: "Nathan Desbrosse",
+      role: "Data Analyst",
+      img: "/nathan.jpg",
+      popularity: 100,
+      linkedin: "https://www.linkedin.com/in/ndesbrosse/"
+    },
+  ]
 
-      {/* Pop-up */}
-      <div className="relative z-10 bg-black text-white rounded-xl shadow-xl max-w-3xl w-full p-6 md:p-10 flex flex-col gap-6">
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      {/* POPUP */}
+      <div className="relative bg-black rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-xl max-h-[90vh] overflow-y-auto">
+        
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 hover:text-primary"
+          className="absolute top-4 right-4 text-white hover:text-primary transition"
         >
-          <X size={24} />
+          <X size={26} />
         </button>
 
         {/* Title */}
-        <h2 className="text-2xl md:text-3xl font-black text-center">
+        <h2 className="text-center text-2xl md:text-3xl font-bold mb-6">
           Qui est le plus populaire ?
         </h2>
 
-        {/* Duel cards */}
-        <div className="flex flex-col md:flex-row gap-4 justify-center">
-          <div className="flex-1">
-            <TrackCard
-              track={leonard}
-              onClick={() => handleSelect("leonard")}
-              selected={selected === "leonard"}
-              revealed={revealed}
-              isWinner={true}
-              isLoser={false}
-              showPopularity={revealed}
-              size="small"
-              className="flex-1"
-            />
-            <div className="flex justify-center mt-2">
-            <a
-                href="https://www.linkedin.com/in/leonard-bayol"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-sm font-medium text-white gap-1"
+        {/* CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {creators.map((c) => (
+            <div
+              key={c.name}
+              className="bg-zinc-900 rounded-xl p-4 flex flex-col items-center shadow-lg"
             >
-                LinkedIn
-            </a>
-            </div>
-          </div>
+              <Image
+                src={c.img}
+                alt={c.name}
+                width={200}
+                height={200}
+                className="rounded-xl w-40 h-40 object-cover mb-4"
+              />
 
-          <div className="flex-1">
-            <TrackCard
-              track={nathan}
-              onClick={() => handleSelect("nathan")}
-              selected={selected === "nathan"}
-              revealed={revealed}
-              isWinner={true}
-              isLoser={false}
-              showPopularity={revealed}
-              size="small"
-              className="flex-1"
-            />
-            <div className="flex justify-center mt-2">
-            <a
-                href="https://www.linkedin.com/in/ndesbrosse"
+              <h3 className="text-xl font-semibold">{c.name}</h3>
+              <p className="text-sm text-muted-foreground mb-3">{c.role}</p>
+
+              <div className="text-3xl font-black">100</div>
+
+              {/* LinkedIn Button */}
+              <a
+                href={c.linkedin}
                 target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-sm font-medium text-white gap-1"
-            >
-                LinkedIn
-            </a>
+                className="mt-4 flex items-center gap-2 bg-[#0A66C2] hover:bg-[#0959A5] text-white py-2 px-4 rounded-lg transition"
+              >
+                <Image
+                  src="/linkedin.png"
+                  alt="LinkedIn"
+                  width={18}
+                  height={18}
+                />
+                <span className="text-sm font-medium">LinkedIn</span>
+              </a>
             </div>
-          </div>
+          ))}
         </div>
 
-        {/* Score / message égalité */}
-        {revealed && (
-          <div className="text-center mt-4">
-            <p className="text-xl font-bold">Égalité : 100 vs 100</p>
-            <p className="text-sm mt-2">
-              Ils ont développé l'application à deux !
-            </p>
-          </div>
-        )}
+        {/* Text */}
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          Ils ont développé l'application à deux.
+        </p>
       </div>
     </div>
   )
