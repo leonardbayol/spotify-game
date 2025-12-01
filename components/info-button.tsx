@@ -33,15 +33,16 @@ export function InfoDuelPopup({ isOpen, onClose }: InfoDuelPopupProps) {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+
       {/* POPUP */}
       <div className="relative bg-black rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-xl max-h-[90vh] overflow-y-auto">
 
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-white hover:text-primary transition"
+          className="absolute top-3 right-3 md:top-4 md:right-4 text-white hover:text-primary transition p-2"
         >
-          <X size={26} />
+          <X size={24} />
         </button>
 
         {/* Title */}
@@ -49,39 +50,63 @@ export function InfoDuelPopup({ isOpen, onClose }: InfoDuelPopupProps) {
           Qui est le plus populaire ?
         </h2>
 
-        {/* CARDS */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Cards */}
+        <div className="grid grid-cols-2 gap-4 relative">
+
+          {/* ÉGALITÉ badge */}
+          {revealed && (
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+              <span className="bg-primary px-3 py-1 rounded-full font-bold shadow-lg">
+                ÉGALITÉ
+              </span>
+            </div>
+          )}
+
           {creators.map((c) => (
             <button
               key={c.name}
               onClick={() => setRevealed(true)}
-              className={`bg-zinc-900 rounded-xl p-3 shadow-lg transition 
-                          flex flex-col items-center hover:scale-[1.02] ${
-                            !revealed ? "cursor-pointer" : "cursor-default"
-                          }`}
+              className={`
+                relative rounded-xl overflow-hidden transition-all duration-300 bg-zinc-900 p-3 
+                flex flex-col items-center
+                ${!revealed ? "cursor-pointer hover:scale-[1.02]" : ""}
+                ${revealed ? "ring-4 ring-primary shadow-lg" : ""}
+              `}
             >
-              <Image
-                src={c.img}
-                alt={c.name}
-                width={300}
-                height={300}
-                className="rounded-xl w-full aspect-square object-cover mb-3"
-              />
+              <div className="relative w-full aspect-square mb-3">
+                <Image
+                  src={c.img}
+                  alt={c.name}
+                  fill
+                  className="rounded-xl object-cover"
+                />
 
+                {/* Green overlay like duel mode */}
+                {revealed && (
+                  <div className="absolute inset-0 bg-primary/40 backdrop-blur-[1px] flex items-center justify-center">
+                    <div className="text-center">
+                      <p className="text-5xl font-black text-white drop-shadow-xl">
+                        100
+                      </p>
+                      <p className="text-xs text-white/90 mt-1">popularité</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Text */}
               <h3 className="text-lg font-semibold">{c.name}</h3>
               <p className="text-xs text-muted-foreground mb-2">{c.role}</p>
 
-              {/* Popularity: hidden before click */}
-              <div className="text-2xl font-black">
-                {revealed ? c.popularity : "?"}
-              </div>
+              {/* Hide popularity number if not revealed */}
+              {!revealed && <p className="text-2xl font-black">?</p>}
 
-              {/* LinkedIn only after reveal */}
+              {/* LinkedIn button */}
               {revealed && (
                 <a
                   href={c.linkedin}
                   target="_blank"
-                  className="mt-3 flex items-center gap-2 bg-[#0A66C2] hover:bg-[#0959A5]
+                  className="mt-3 flex items-center gap-2 bg-[#0A66C2] hover:bg-[#0A66C2]/90 
                              text-white py-2 px-3 rounded-lg transition text-sm font-medium"
                 >
                   <Image src="/linkedin.png" alt="LinkedIn" width={16} height={16} />
@@ -92,7 +117,7 @@ export function InfoDuelPopup({ isOpen, onClose }: InfoDuelPopupProps) {
           ))}
         </div>
 
-        {/* Text after reveal */}
+        {/* Reveal text */}
         {revealed && (
           <p className="text-center text-sm text-muted-foreground mt-6">
             Ils ont développé l'application à deux.
