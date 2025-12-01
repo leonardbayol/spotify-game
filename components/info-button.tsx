@@ -16,18 +16,18 @@ export function InfoDuelPopup({ isOpen, onClose }: InfoDuelPopupProps) {
 
   const creators = [
     {
-      name: "Léonard",
+      name: "Léonard Bayol",
       role: "Product Manager",
       img: "/leonard.jpg",
       popularity: 100,
       linkedin: "https://www.linkedin.com/in/leonard-bayol/"
     },
     {
-      name: "Nathan",
+      name: "Nathan Desbrosse",
       role: "Data Analyst",
       img: "/nathan.jpg",
       popularity: 100,
-      linkedin: "https://www.linkedin.com/in/nathan-desbrosse/"
+      linkedin: "https://www.linkedin.com/in/ndesbrosse/"
     },
   ]
 
@@ -122,7 +122,7 @@ export function InfoDuelPopup({ isOpen, onClose }: InfoDuelPopupProps) {
         {/* Reveal text */}
         {revealed && (
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Ils ont développé l'application à deux.
+            Découvrez qui sont les deux développeurs du projet !
           </p>
         )}
       </div>
